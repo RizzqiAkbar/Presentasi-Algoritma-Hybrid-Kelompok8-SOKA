@@ -1,137 +1,181 @@
-# Presentasi & Simulasi Algoritma Hybrid Cloud Task Scheduling (Kelompok 8 SOKA)
+# Interactive Cloud Scheduling Lab
 
-Repositori ini memuat **materi presentasi interaktif** (`index.html`) dan **kode sumber simulasi CloudSim** (`../Code/`) untuk perbandingan performa dua algoritma penjadwalan komputasi awan *hybrid*:
-1. **Hybrid Max-Min + Ant Colony Optimization (ACO)** *(Kandidat Utama)*
-2. **Hybrid Min-Min + Genetic Algorithm (GA)** *(Kandidat Pembanding)*
+Presentasi Bahasa Indonesia Kelompok 8 SOKA untuk membandingkan **Hybrid Max-Min + ACO** dan **Hybrid Min-Min + GA**. Lima materi tetap dipertahankan: literatur, walkthrough ACO, walkthrough GA, laboratorium interaktif, dan benchmark aktual CloudSim.
 
-Pengujian dilakukan menggunakan **CloudSim 3.0.3** dengan lingkungan infrastruktur komputasi awan heterogen (10 VM) dan dataset realistis **Google Cluster Jobs (GoCJ)** berukuran 100 hingga 1.000 tasks.
+Judul akademik: **Algoritma Hybrid ACO + Max-Min dan GA + Min-Min**. Subjudul: **Analisis Perbandingan Penjadwalan Task pada Cloud Computing**. Dalam penjelasan teknis, nama hybrid tetap mengikuti urutan eksekusi Max-Min + ACO dan Min-Min + GA. Panduan praktis untuk presenter tersedia di `PRESENTATION_GUIDE.md`.
 
----
+Lab menjalankan algoritma di browser, menghasilkan trace dari kalkulasi nyata, kemudian memutar ulang trace tersebut. Ini bukan CloudSim di browser. Hasil rekaman GoCJ pada materi 5 terpisah dari skenario lab.
 
-## 📁 Struktur Direktori & Keterkaitan Berkas
+## Menjalankan secara lokal
 
-```
-SOKA/Hybrid/
-├── Presentasi-Algoritma-Hybrid-Kelompok8-SOKA/
-│   ├── index.html            # Web deck presentasi interaktif (Tailwind CSS, KaTeX, Simulator visual)
-│   └── README.md             # Dokumentasi lengkap konsep, kode, dan panduan presentasi
-└── Code/
-    ├── Hybrid.java           # Kode sumber implementasi CloudSim & kedua algoritma hybrid
-    ├── pom.xml               # Konfigurasi Maven (Java 17, CloudSim 3.0.3, Gson, Commons-Math3)
-    ├── Datasets/             # 10 berkas dataset GoCJ format JSON (100 s.d. 1.000 task)
-    │   ├── GoCJ_Dataset_100.json
-    │   ├── ...
-    │   └── GoCJ_Dataset_1000.json
-    └── Results/              # Hasil keluaran otomatis simulasi batch CloudSim
-        ├── hasil_simulasi_hybrid.csv   # Data metrik mentah per task & algoritma
-        └── ringkasan_simulasi.txt      # Laporan tabel rekapitulasi komparasi
+Dari Ubuntu WSL:
+
+```bash
+cd /home/rimubren/projects/Presentasi-Algoritma-Hybrid-Kelompok8-SOKA
+ss -ltnp 'sport = :8080'
+python3 -m http.server 8080 --bind 0.0.0.0
 ```
 
----
+Buka [http://localhost:8080/](http://localhost:8080/), atau [langsung ke lab](http://localhost:8080/#4). Server yang sudah ada pada port 8080 melayani checkout ini dan dipakai ulang. Jangan menghentikan proses lain untuk mengambil port. Alamat IPv4 WSL saat verifikasi: `172.20.152.50`; alamat ini dapat berubah setelah WSL restart.
 
-## 📚 Landasan Teori & Tinjauan Pustaka Ilmiah
+Tidak ada build, backend, package runtime, font remote, atau CDN. Python 3 hanya diperlukan untuk menyajikan berkas HTTP. Jangan membuka lewat `file://`: module dan Web Worker memerlukan origin HTTP. Browser modern dengan SVG, ES modules, Web Animations, dialog dan module Worker diperlukan.
 
-Penelitian dan implementasi ini didasarkan pada dua rujukan jurnal ilmiah utama:
+## Alur demonstrasi
 
-1. **Jurnal 1 (Advance ACO & Max-Min Hybrid)**:
-   * **Judul:** *"Task Scheduling based on Advance Ant Colony Optimization and Particle Swarm Optimization with Machine learning in the cloud environment"*
-   * **Penulis:** Mrs. Nahla Ahmed Faraj & Prof. Ramesh Babu Inampudi
-   * **Publikasi:** *International Journal of Management, Technology And Engineering (IJAMTES)*, Vol. 8, Issue XII, Dec 2018, pp. 32–40.
-   * **Kutipan Kunci:**
-     > *"By combining with the Max-Min algorithm, the outputs of Max-Min algorithm can be assigned to a VM. This output is then given as input to the [metaheuristic] algorithm. As a result, it helps to find the optimal solution compare to the existing algorithm."* (Faraj & Inampudi, 2018, Hal. 34)
+1. Materi 1 menunjukkan hubungan heuristic seeding dan pencarian metaheuristik. Kutipan awal tersedia dalam disclosure literatur.
+2. Materi 2 dan 3 memiliki lima langkah yang dapat dipilih. Contoh dihitung menggunakan engine yang sama dengan lab, dengan enam task dan tiga VM.
+3. Materi 4 langsung siap dengan 10 task, 4 VM, 2 host, seed 8. **Mode Presentasi Terpandu** menjadi default: Reset, Sebelumnya, Putar/Jeda, Berikutnya dan Kecepatan. Perpindahan mengikuti keputusan awal heuristik, siklus optimasi pertama dan checkpoint iterasi berikutnya. Pada default ada 30 langkah panduan; jumlah mengikuti trace skenario.
+4. Pada seeding/optimasi, kanvas utama beralih ke graph feromon atau kromosom. **Lihat infrastruktur** mengembalikan rack host dan VM. Inspector tetap menyediakan angka aktual.
+5. **Mode Lanjutan** membuka seluruh event, substep, pemilih iterasi/generasi, semut, kromosom, operasi anak, matriks dan scrubber. Pengaturan Detail/Ringkas tetap tersedia. Pergantian mode menjeda playback tanpa mengganti skenario, algoritma atau posisi event; tidak menjalankan ulang optimizer.
+6. **Hasil akhir** menunjukkan jadwal global best. **Jalankan eksekusi** memutar clock simulasi terpisah selama sekitar 12 detik wall-clock pada tempo 1×; semua task berjalan paralel antar-VM. Scrubber waktu dapat digunakan untuk memeriksa keadaan tepat pada suatu waktu.
+7. **Bandingkan** menampilkan seed, jadwal akhir, history dan metrik kedua algoritma dengan skala waktu Gantt yang sama.
+8. Materi 5 menyediakan filter 100–300, 400–700, 800–1.000 task dan grafik makespan, DoI, utilisasi serta runtime yang berasal dari rekaman asli.
 
-2. **Jurnal 2 (Heuristic Seeding pada Lingkungan Terdistribusi)**:
-   * **Judul:** *"Resource Allocation & Heuristic-Metaheuristic Scheduling in Distributed Sensor & Computing Networks"*
-   * **Publikasi:** *International Journal of Distributed Sensor Networks (SAGE Publications)*, DOI: `10.1080/15501320802554976`.
-   * **Sintesis Masalah:** Algoritma metaheuristik murni (GA/ACO acak) menderita masalah *cold-start* dan membutuhkan iterasi lambat untuk menemukan solusi layak. Pendekatan *hybrid* memanfaatkan solusi heuristik deterministik sebagai titik awal (*heuristic seeding*) untuk mempercepat konvergensi global.
+**Layar penuh** adalah kontrol terpisah yang kompatibel dengan kedua mode interaksi. Kontrol ini mengurangi chrome dan menjaga playback terlihat; akses konfigurasi tetap tersedia. Browser yang mengizinkan Fullscreen API juga masuk fullscreen; jika izin tidak tersedia, tata letak distraction-free tetap aktif. Gunakan **Keluar layar penuh** atau Escape. Pada laptop pendek, scroll vertikal singkat masih dapat diperlukan untuk berpindah antara diagram, timeline dan metrik. Pada mobile, gunakan pilihan **Materi**; diagram/tabel lebar memiliki scroll sendiri.
 
----
+Satu disclosure **Bantuan** mengikuti istilah fase aktif. Penjelasan menerangkan proses, alasan dan hasil dengan nilai aktual serta membandingkan kandidat dengan global best sebelumnya. Grafik membedakan current-best dan global-best; kedua kurva GA ini berimpit karena elitisme. Walkthrough materi 2/3 mempunyai tombol Sebelumnya/Berikutnya, interpretasi diagram dan rumus/parameter dalam disclosure.
 
-## ⚙️ Cara Kerja Kedua Algoritma Hybrid
+## Konfigurasi
 
-### 1. Hybrid Max-Min + ACO (Kandidat Utama)
-* **Langkah 1 (Matriks ETC):** Menghitung perkiraan waktu eksekusi task $T_i$ pada tiap virtual machine $VM_j$:
-  $$ET_{ij} = \frac{\text{Length}(T_i)}{\text{MIPS}(VM_j)}, \qquad CT_{ij} = ET_{ij} + RT_j$$
-* **Langkah 2 (Eksekusi Max-Min):** Mencari $CT$ minimum per tugas, lalu memilih tugas dengan nilai $CT$ **terbesar** untuk dijadwalkan lebih awal ke VM tercepat.
-* **Langkah 3 (Guided Pheromone Seeding):** Jalur alokasi $(T_i, VM_j)$ yang dihasilkan Max-Min diberikan bonus feromon awal:
-  $$\tau_{ij}(0) = \tau_{\text{base}} + 2.0 = 3.0$$
-* **Langkah 4 (Konstruksi Solusi Semut):** 25 semut menyusun pemetaan task berdasarkan aturan probabilitas roulette-wheel:
-  $$P_{ij} = \frac{[\tau_{ij}]^\alpha \cdot [\eta_{ij}]^\beta}{\sum_{k=1}^{m} [\tau_{ik}]^\alpha \cdot [\eta_{ik}]^\beta}, \quad \text{dengan } \eta_{ij} = \frac{1}{ET_{ij} + 10^{-6}}$$
-* **Langkah 5 (Evaporasi & Elitist Update):**
-  $$\tau_{ij}(t+1) = (1 - \rho)\tau_{ij}(t) + \Delta \tau_{ij}^{\text{best}}, \quad \Delta \tau_{ij}^{\text{best}} = \frac{Q}{\text{Makespan}_{\text{best}}}$$
-  *Parameter: $\alpha = 1.0, \beta = 2.0, \rho = 0.2, Q = 100.0, \text{Ants} = 25, \text{Iterations} = 50$.*
+**Konfigurasi skenario** membuka editor bersama untuk kedua algoritma. Membukanya menghentikan playback dan eksekusi.
 
----
+Jumlah host, VM, task dan jenis workload langsung terlihat bersama preset. Seed, kapasitas/jenis infrastruktur, rincian MI/MIPS/placement, ETC custom dan parameter optimizer ditempatkan dalam disclosure lanjutan. Semua kemampuan konfigurasi tetap tersedia pada kedua mode interaksi.
 
-### 2. Hybrid Min-Min + GA (Kandidat Pembanding)
-* **Langkah 1 (Eksekusi Min-Min):** Menghitung waktu penyelesaian minimum, lalu memilih task dengan $CT$ **terkecil** secara berulang hingga semua tugas terjadwal.
-* **Langkah 2 (Chromosome Seeding):** Hasil jadwal Min-Min dijadikan **Kromosom ke-0 (Elit)**, sedangkan 29 kromosom lainnya dibangkitkan secara acak untuk membentuk populasi awal ($PopSize = 30$).
-* **Langkah 3 (Evaluasi Fitness):**
-  $$\text{Fitness}(K) = \frac{1}{\text{Makespan}(K)} = \frac{1}{\max_{j \in VM} \sum_{i \in K_j} ET_{ij}}$$
-* **Langkah 4 (Seleksi & Crossover):** *Tournament Selection* ($k=3$) dan *Single-Point Crossover* ($P_c = 0.8$).
-* **Langkah 5 (Mutasi & Elitisme):** Mutasi gen acak ($P_m = 0.05$) dan mempertahankan kromosom terbaik sepanjang 50 generasi.
+- Host: 1–8; VM: 1–24; task: 1–100.
+- Generator mendukung infrastruktur homogen 1.500 MIPS atau tier heterogen 500, 1.000, 1.500 dan 2.500 MIPS.
+- Workload seragam, bervariasi, ringan, campuran, atau satu task sangat berat. Enam preset menghasilkan data berbeda.
+- Seed adalah integer unsigned 32-bit. Generator dan optimizer memakai Mulberry32; skenario, parameter dan seed yang sama menghasilkan mapping serta trace yang sama. Waktu komputasi tidak deterministik.
+- Setelah mengubah pengaturan generator, klik **Bangkitkan data dari pengaturan**. Ini mengganti rincian draft. Kemudian edit kapasitas host, MIPS tiap VM, host tujuan VM, dan MI tiap task bila diperlukan.
+- VM tidak boleh mereservasi total MIPS melebihi kapasitas host. Placement harus menunjuk host yang ada. Tidak ada overcommit dalam model lab.
+- Host mengontrol placement/validasi/visualisasi. Memindahkan VM ke host lain atau menambah host tanpa mengubah MIPS/ETC tidak mengubah makespan.
+- Model normal menghitung `ET[i][j] = MI[i] / MIPS[j]` dalam detik.
+- Mode **ETC custom** menerima satu baris per task dan satu kolom per VM, dipisahkan koma. Nilai harus positif dan berdimensi tepat. Dalam mode ini ETC independen dari MI/MIPS; label model selalu terlihat.
+- Parameter advanced: semut, iterasi, alpha, beta, evaporasi, Q; populasi, generasi, tournament, peluang crossover dan mutasi. Semua parameter memengaruhi kalkulasi.
 
----
+Generator bukan dataset GoCJ. Workload lab tidak boleh diklaim sebagai pengulangan benchmark GoCJ.
 
-## 📊 Hasil Pengujian Aktual CloudSim (GoCJ 100–1.000 Tasks)
+## Algoritma dan kesetiaan pada Java
 
-Pengujian dijalankan pada **10 VM Heterogen** (tingkat kapasitas: 500, 1.000, 1.500, 2.000, dan 2.500 MIPS) dengan biaya komputasi `COST_PER_SEC = $3.0`.
+Referensi: [Hybrid.java](https://github.com/RizzqiAkbar/Algoritma-Hybrid-Kelompok-8/blob/main/Hybrid.java), commit `2c0dd4b97489b4bc147e28d01bfa0acd9c37c80b` saat inspeksi. Salinan read-only disimpan di `work/java-reference/` dan diabaikan Git.
 
-Data diambil langsung dari berkas keluaran simulasi [`Code/Results/ringkasan_simulasi.txt`](file:///c:/Users/Project%20Codingan/SOKA/Hybrid/Code/Results/ringkasan_simulasi.txt):
+### Heuristik
 
-| N Tasks | Makespan GA | Makespan ACO ★ | Selisih Makespan | DoI GA | DoI ACO ★ | Util GA (%) | Util ACO ★ (%) | Cost (GA / ACO) | Algo Time (GA / ACO) |
-|:-------:|:-----------:|:--------------:|:----------------:|:------:|:---------:|:-----------:|:--------------:|:---------------:|:--------------------:|
-| **100** | 899,7 s | **852,8 s** | -46,9 s | 0,160 | **0,027** | 93,1% | **98,9%** | \$25.131 / \$25.297 | 19,6 ms / 60,9 ms |
-| **200** | 1.704,7 s | **1.605,2 s** | -99,5 s | 0,271 | **0,011** | 94,3% | **99,6%** | \$48.221 / \$47.953 | 28,2 ms / 88,6 ms |
-| **300** | 2.299,2 s | **2.248,1 s** | -51,1 s | 0,069 | **0,003** | 97,7% | **99,8%** | \$67.367 / \$67.336 | 26,3 ms / 130,2 ms |
-| **400** | 4.406,1 s | **4.154,9 s** | -251,1 s | 0,207 | **0,007** | 94,3% | **99,8%** | \$124.682 / \$124.396 | 31,5 ms / 152,4 ms |
-| **500** | 4.375,9 s | **4.199,2 s** | -176,8 s | 0,092 | **0,005** | 95,8% | **99,8%** | \$125.812 / \$125.741 | 36,9 ms / 170,9 ms |
-| **600** | 5.623,5 s | **5.493,2 s** | -130,3 s | 0,135 | **0,003** | 96,8% | **99,9%** | \$163.310 / \$164.640 | 45,3 ms / 207,5 ms |
-| **700** | 6.782,1 s | **6.485,2 s** | -296,9 s | 0,186 | **0,004** | 94,8% | **99,9%** | \$192.795 / \$194.383 | 53,3 ms / 246,8 ms |
-| **800** | 6.609,1 s | **6.389,1 s** | -220,0 s | 0,239 | **0,002** | 93,7% | **99,9%** | \$185.812 / \$191.522 | 64,6 ms / 280,0 ms |
-| **900** | 9.299,7 s | **8.898,3 s** | -401,5 s | 0,180 | **0,003** | 94,4% | **99,9%** | \$263.342 / \$266.631 | 68,7 ms / 314,7 ms |
-| **1000** | 7.638,4 s | **7.412,9 s** | -225,5 s | 0,105 | **0,003** | 96,0% | **99,9%** | \$219.898 / \$222.191 | 92,5 ms / 354,0 ms |
+Untuk setiap task yang belum terjadwal, hitung `CT = ET + readyTime`. Max-Min memilih task dengan minimum CT terbesar; Min-Min memilih minimum terkecil. Scan berdasarkan ID task lalu ID VM. Perbandingan strict mempertahankan pemenang pertama ketika seri, sama seperti Java.
 
----
+Trace menyimpan lima substep per keputusan: evaluasi CT, minimum per task, pemilihan task/VM, routing, alokasi dan ready time baru. Matriks, graph dan timeline disinkronkan terhadap snapshot ini.
 
-## 💡 Temuan Kunci & Analisis Perbandingan
+### ACO
 
-1. **Efisiensi Makespan (10/10 Kemenangan untuk Max-Min + ACO)**:
-   * Max-Min + ACO unggul di seluruh 10 skenario GoCJ, memangkas makespan antara **46,9 detik** (skala 100 task) hingga **401,5 detik** (skala 900 task).
-2. **Keseimbangan Beban (Degree of Imbalance - DoI)**:
-   * Nilai DoI ACO konsisten berada pada rentang **0,002 – 0,027**, mendekati keseimbangan sempurna.
-   * Sebaliknya, Min-Min + GA memiliki DoI yang jauh lebih tinggi (**0,069 – 0,271**) akibat kecenderungan Min-Min menumpuk tugas kecil di VM cepat.
-3. **Pemanfaatan Sumber Daya (Resource Utilization)**:
-   * ACO mencapai utilisasi **98,9% – 99,9%**, memastikan kapasitas pemrosesan seluruh VM digunakan secara maksimal.
-4. **Trade-Off Waktu Algoritma (Runtime Complexity)**:
-   * Hybrid Min-Min + GA lebih cepat dalam pengambilan keputusan alokasi (**19,6 – 92,5 ms**) karena representasi kromosom integer 1D.
-   * Hybrid Max-Min + ACO memerlukan komputasi matriks probabilitas semut (**60,9 – 354,0 ms**). Namun *overhead* komputasi ini sangat sepadan karena berhasil menghemat waktu eksekusi aktual cloud hingga ratusan detik.
+Default terverifikasi: 25 semut, 50 iterasi, alpha 1, beta 2, rho 0,2, Q 100. Pasangan hasil Max-Min memulai tau 3; pasangan lain tau 1. Heuristik visibilitas `eta = 1/(ET + 1e-6)`.
 
----
+Setiap semut menyusun mapping menggunakan roulette-wheel dengan probabilitas ternormalisasi `tau^alpha * eta^beta`. Probabilitas tidak memakai ready time; ini mengikuti Java. Semua kandidat dievaluasi berdasarkan makespan. Global best hanya diperbarui bila lebih kecil, tanpa tie-break DoI. Evaporasi berlaku ke seluruh matriks, dengan floor 0,01. Deposit `Q / globalBestMakespan` hanya pada pasangan global best.
 
-## 🚀 Panduan Menjalankan
+Semua semut dihitung dan dapat diinspeksi. Trace konstruksi menampilkan hingga tiga titik representatif dari semut 1 per iterasi. Graph menampilkan hingga 12 task awal ditambah task yang dipilih, dan hingga 7 VM awal ditambah VM tujuan terpilih. Jumlah representatif diberi label; tidak mengurangi populasi yang dihitung. Probabilitas yang ditampilkan adalah probabilitas saat kandidat dibangun, sedangkan tau mengikuti substep evaporasi/reinforcement saat ini.
 
-### A. Membuka Slide Presentasi Interaktif
-1. Buka berkas [`index.html`](file:///c:/Users/Project%20Codingan/SOKA/Hybrid/Presentasi-Algoritma-Hybrid-Kelompok8-SOKA/index.html) menggunakan peramban modern (Google Chrome, Microsoft Edge, Firefox).
-2. **Fitur Presentasi:**
-   * **Navigasi Tombol & Keyboard:** Gunakan tombol `←` dan `→` pada keyboard atau tombol navigasi di bagian header/footer.
-   * **Slide 1:** Tinjauan pustaka, kutipan jurnal, dan landasan teori ilmiah.
-   * **Slide 2 & 3:** Diagram alur 5 langkah, rumus matematis KaTeX, dan justifikasi parameter untuk kedua algoritma.
-   * **Slide 4:** Simulator visual interaktif 3 tugas pada 2 VM dengan beban animasi bar dinamis.
-   * **Slide 5:** Tabel rekapitulasi data benchmark aktual CloudSim dengan filter skala (Semua, Kecil, Menengah, Besar).
+### GA
 
-### B. Menjalankan Ulang Simulasi CloudSim (Java 17 & Maven)
-Pastikan Java 17 dan Maven telah terpasang. Jalankan perintah berikut melalui terminal:
+Default terverifikasi: populasi 30, generasi 50, tournament size 3, crossover 0,8 dan mutasi 0,05. Kromosom 0 berasal dari Min-Min; yang lain acak. Posisi gen adalah task, nilainya VM. Fitness `1/makespan` ditampilkan, sedangkan seleksi memakai makespan minimum yang ekuivalen.
 
-```powershell
-# Pindah ke direktori Code
-cd "SOKA/Hybrid/Code"
+Tournament menarik peserta dengan replacement. Single-point crossover memilih titik 0 sampai N−1, termasuk titik 0 seperti Java. Setiap gen dapat dipilih ulang secara acak pada mutasi; hasil baru boleh sama. Satu elit global disalin ke slot 0 sebelum anak baru dibuat. Global best diperbarui hanya pada penurunan makespan dan tetap dipertahankan pada seri.
 
-# Menjalankan simulasi batch untuk seluruh dataset (100 s.d. 1.000 Tasks):
-mvn -q exec:java
+Seluruh populasi/operasi anak dihitung. Diagram menampilkan sampel lima kromosom atau satu operasi anak yang dapat dipilih. Semua kromosom pada generasi optimasi tersedia melalui inspector. Inspeksi kandidat mengubah proyeksi timeline dan metrik, tanpa mengubah hasil pencarian.
 
-# Atau menjalankan untuk satu berkas dataset tertentu:
-mvn -q exec:java "-Dexec.args=Datasets/GoCJ_Dataset_500.json"
+## Model eksekusi dan metrik
+
+- Semua task tersedia pada waktu nol. Setiap VM memiliki satu processing element; satu task aktif per VM, tanpa preemption. VM yang berbeda berjalan paralel.
+- Konstruksi heuristik memakai urutan alokasi untuk menjelaskan ready time. Jadwal optimizer/final mengikuti ID task, sesuai urutan submit broker Java. Urutan pada VM tidak mengubah total load/makespan model ini.
+- Tidak ada jaringan, transfer file, startup CloudSim, contention fisik, kegagalan, deadline atau dynamic arrivals. Reservasi MIPS dianggap tersedia penuh.
+- CloudSim asli membangun host satu PE 100.000 MIPS, memakai VM scheduler time-shared dan cloudlet scheduler space-shared. Lab memakai validasi jumlah reservasi MIPS yang lebih sederhana; tidak mereproduksi mekanisme alokasi host/RAM/BW CloudSim.
+- Makespan = maksimum total execution time tiap VM. Ini proyeksi jadwal; clock eksekusi terpisah dan tidak sama dengan runtime browser.
+- DoI = `(max(load) − min(load)) / (average(load) + 1e-9)`; VM idle tetap dihitung.
+- Utilisasi = `sum(load) / (makespan * jumlahVM + 1e-9) * 100%`.
+- Rata-rata beban = total execution time / jumlah VM. “Selesai” hanya bertambah setelah clock eksekusi melewati finish time task.
+- Waktu komputasi lab mengukur engine plus pembuatan trace, di dalam Worker; tidak termasuk rendering dan transfer trace kembali ke UI. Tidak dapat dibandingkan langsung dengan timer algoritma Java.
+- Kedua optimizer mempertahankan seed sebagai global best. Hasil akhir tidak lebih buruk dari seed dalam makespan, tetapi mungkin tidak berubah. Pencarian tidak menjamin optimum global. Makespan yang lebih baik dapat memiliki DoI lebih buruk.
+
+Java produksi memakai `java.util.Random` dan seed dinamis (`SecureRandom.nextLong() ^ System.nanoTime()`). Lab memakai Mulberry32 dan seed tetap. Nilai seed yang sama di Java normal dan browser tidak menghasilkan urutan random yang sama. Parity test menggunakan adapter draw yang sama agar logika algoritma dapat dibandingkan secara tepat.
+
+## Benchmark dan literatur
+
+Seluruh 10 baris benchmark pada `ui/benchmark.js` dipertahankan dari `Results/ringkasan_simulasi.txt`: makespan, DoI, utilisasi, cost dan runtime untuk GA/ACO. Kolom delta dihitung dari makespan yang sudah dibulatkan pada rekaman. Tidak ada nilai lab yang ditulis ke tabel ini. ACO menang makespan pada 10 rekaman tersebut; itu tidak menetapkan pemenang skenario browser atau eksperimen baru.
+
+Literatur, DOI, penulis dan kutipan awal dipertahankan. Transkripsi tidak diverifikasi terhadap PDF penerbit dan labelnya menjelaskan keterbatasan bibliografis tersebut. Tidak ada referensi ilmiah baru yang dibuat.
+
+## Struktur berkas
+
+```text
+index.html                  Lima materi, editor, kontrol dan semantik
+simulation.css              Sistem visual solid-color, responsif, reduced motion
+presentation.js             Navigasi, keyboard, mode presentasi
+simulation.js               Orkestrasi lab, worker, inspeksi dan clock eksekusi
+engine/scenario.js          Generator, validasi, ETC, parameter default
+engine/random.js            PRNG seeded
+engine/heuristic.js         Max-Min / Min-Min dan trace keputusan
+engine/aco.js               Kandidat, probabilitas, feromon dan trace ACO
+engine/ga.js                Tournament, crossover, mutasi, elitisme dan trace GA
+engine/metrics.js           Slot timeline dan metrik
+engine/run.js               Pipeline run dan batas fase
+engine/worker.js            Komputasi kedua algoritma di luar main thread
+ui/playback.js              Timer tunggal, seek, stepping dan tempo
+ui/guided.js                Pemilihan langkah instruksional dari trace yang sama
+ui/learning.js              Definisi kontekstual dan penjelasan berbasis nilai aktual
+ui/configuration.js         Draft konfigurasi dan editor
+ui/renderers.js             SVG topologi, Gantt, matriks, graph, kromosom
+ui/walkthrough.js           Walkthrough materi 2/3 berbasis engine
+ui/benchmark.js             Data benchmark asli dan visualisasinya
+tests/engine.test.js         Automated tests kalkulasi dan playback
+tests/guided.test.js         Navigasi terpandu, mode, fase dan perbandingan kandidat
+tests/benchmark.test.js      Integritas seluruh angka terhadap ringkasan Java
+tests/JavaParity.java        Reflection harness terhadap Hybrid.java asli
+tests/java-parity.js         Perbandingan keluaran Java / browser engine
+tests/contrast.py            Verifikasi palette lewat checker AntiSlop terpasang
+DESIGN.md                   Arah visual dan alasan desain
+IMPLEMENTATION_REPORT.md     Bukti implementasi, pengujian dan quality gate
+PRESENTATION_GUIDE.md        Narasi lima materi, urutan klik, istilah dan tanya jawab
+work/                       Backup sebelum redesign, referensi dan hasil uji; ignored
 ```
 
-Hasil eksekusi akan otomatis tersimpan dan diperbarui di folder [`SOKA/Hybrid/Code/Results/`](file:///c:/Users/Project%20Codingan/SOKA/Hybrid/Code/Results/).
+## Keyboard dan aksesibilitas
+
+| Tombol | Aksi |
+| --- | --- |
+| Panah kiri / kanan | Materi sebelumnya / berikutnya |
+| Spasi saat fokus di area lab | Putar / jeda konstruksi jadwal |
+| `[` / `]` | Fase sebelumnya / berikutnya |
+| `F` | Layar penuh / distraction-free |
+| Escape | Tutup dialog / keluar layar penuh |
+| Tab, Enter, Spasi | Kontrol native, disclosure dan task pada Gantt |
+| Panah, Home, End pada slider | Scrub event atau clock eksekusi |
+
+Shortcut tidak menangkap input, select, textarea atau contenteditable. Tombol/link/summary mempertahankan perilaku keyboard native. **Kurangi gerak** pada footer menonaktifkan choreography; pengaturan sistem `prefers-reduced-motion` selalu dihormati. Clock dan perubahan state tetap berjalan agar simulasi dapat digunakan tanpa animasi perpindahan. Focus ring, label, tabel, alt SVG dan dialog native disediakan.
+
+## Pengujian
+
+Tidak ada instalasi dependencies. Dengan Node.js 20 atau lebih baru:
+
+```bash
+node --test tests/*.test.js
+```
+
+Pada mesin pengembangan ini Node belum ada di PATH Ubuntu; tes dijalankan dengan Node Windows 26.13.0 terhadap berkas checkout WSL. Ini tidak diperlukan untuk menjalankan presentasi.
+
+Parity opsional terhadap referensi Java (JDK diperlukan; tidak menjalankan CloudSim atau menulis Results):
+
+```bash
+mkdir -p work
+git clone --depth 1 https://github.com/RizzqiAkbar/Algoritma-Hybrid-Kelompok-8.git work/java-reference
+mkdir -p work/java-classes
+javac -cp work/java-reference/lib/cloudsim-3.0.3.jar -d work/java-classes work/java-reference/Hybrid.java tests/JavaParity.java
+java -cp work/java-classes:work/java-reference/lib/cloudsim-3.0.3.jar JavaParity > work/java-parity.json
+node tests/java-parity.js
+```
+
+Parity menjalankan 32 perbandingan pada matriks kecil, seri, dan single-VM memakai adapter Mulberry32 untuk `nextDouble` dan `nextInt`. Ini memverifikasi logika penjadwalan, bukan kesetaraan runtime atau lifecycle CloudSim.
+
+Lihat `IMPLEMENTATION_REPORT.md` untuk hasil nyata, daftar click-through dan batas verifikasi browser. Refinement diperiksa pada 1920×1080, 1366×768, 1280×720 dan cek mobile 390×844; pemeriksaan 820×1180 tercatat pada implementasi awal. Tidak ada klaim Lighthouse, Web Vitals atau audit WCAG menyeluruh.
+
+## Deployment statis
+
+Kompatibel dengan Vercel sebagai static site. Pilih framework **Other**, tanpa build command, root/output direktori checkout. Sertakan `index.html`, `simulation.css`, `simulation.js`, `presentation.js`, `engine/` dan `ui/`. Tidak memerlukan environment variable atau backend. Jangan sertakan `work/` pada upload manual.
+
+Tidak ada commit, push, perubahan akun/permission atau deployment produksi yang dilakukan dalam redesign ini. Perintah Git manual yang telah disesuaikan dengan working tree tersedia di laporan implementasi. Review diff sebelum menjalankannya.
