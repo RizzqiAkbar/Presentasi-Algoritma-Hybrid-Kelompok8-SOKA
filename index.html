@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hybrid Cloud Task Scheduling (Max-Min + ACO vs Min-Min + GA)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .slide-container {
+            display: none;
+        }
+
+        .slide-container.active {
+            display: block;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .bar-fill {
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-50 bg-white border-b border-slate-200 px-6 py-3 shadow-sm">
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <span class="px-2.5 py-1 rounded-md bg-indigo-600 text-white text-xs font-bold uppercase">Algoritma
+                    Hybrid</span>
+                <h1 class="font-bold text-slate-800 text-sm sm:text-base">Hybrid Task Scheduling: Max-Min + ACO vs
+                    Min-Min + GA</h1>
+            </div>
+            <div class="flex items-center gap-2">
+                <span id="slideIndicator" class="text-xs font-semibold text-slate-600 mr-2">Slide 1 / 5</span>
+                <button type="button" id="btnPrev"
+                    class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-xs font-semibold text-slate-700">←
+                    Sebelumnya</button>
+                <button type="button" id="btnNext"
+                    class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white">Berikutnya
+                    →</button>
+            </div>
+        </div>
+        <div class="max-w-6xl mx-auto mt-2.5 bg-slate-200 h-1.5 rounded-full overflow-hidden">
+            <div id="progressBar" class="bg-indigo-600 h-full transition-all duration-300" style="width: 20%"></div>
+        </div>
+    </header>
+
+    <!-- Main Presentation Stage -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
+
+        <!-- ==================== SLIDE 1: LANDASAN JURNAL & KUTIPAN ==================== -->
+        <section class="slide-container active" data-slide="1">
+            <div class="mb-6">
+                <span class="text-xs font-bold tracking-widest uppercase text-indigo-600">SLIDE 1 • LANDASAN LITERATUR
+                    &amp; KUTIPAN JURNAL</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Konsep Hybrid Scheduling &amp;
+                    Tinjauan Pustaka Ilmiah</h2>
+                <p class="text-slate-600 mt-2 text-sm sm:text-base">
+                    Menggabungkan kecepatan pengambilan keputusan lokal algoritma <strong>Heuristik</strong>
+                    (<em>Max-Min / Min-Min</em>) dengan kemampuan pencarian global algoritma
+                    <strong>Metaheuristik</strong> (<em>ACO / GA</em>) pada lingkungan komputasi awan heterogen (Dataset
+                    GoCJ).
+                </p>
+            </div>
+
+            <!-- Journal Reference Cards with Direct Quotes -->
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <!-- Jurnal 1 -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="px-2.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-xs font-bold">Jurnal 1
+                                • ACO &amp; Max-Min Hybrid</span>
+                            <span class="text-xs font-mono text-slate-400">IJAMTES • Dec 2018</span>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-base leading-snug">
+                            "Task Scheduling based on Advance Ant Colony Optimization and Particle Swarm Optimization
+                            with Machine learning in the cloud environment"
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-1.5">
+                            <strong>Penulis:</strong> Mrs. Nahla Ahmed Faraj &amp; Prof. Ramesh Babu Inampudi<br />
+                            <strong>Publikasi:</strong> <em>International Journal of Management, Technology And
+                                Engineering</em>, Vol. 8, Issue XII, Dec 2018, pp. 32–40
+                        </p>
+
+                        <div class="mt-4 space-y-3">
+                            <blockquote
+                                class="border-l-4 border-indigo-500 bg-indigo-50/70 p-3.5 rounded-r-lg text-xs text-slate-800 italic leading-relaxed">
+                                "This paper focus in two kinds of problems i) when larger task is assigned to a VM with
+                                low processing ability, its processing time is relatively long and, the task may not be
+                                completed before its deadline... ii) When a small task is assigned to a VM with strong
+                                processing capacity, which is making a large task stay in a waiting state for an extra
+                                time."
+                                <span class="block not-italic font-semibold text-indigo-900 mt-1.5">— Kutipan Masalah
+                                    Penjadwalan (Faraj &amp; Inampudi, 2018, Hal. 33)</span>
+                            </blockquote>
+
+                            <blockquote
+                                class="border-l-4 border-emerald-500 bg-emerald-50/70 p-3.5 rounded-r-lg text-xs text-slate-800 italic leading-relaxed">
+                                "By combining with the Max-Min algorithm, the outputs of Max-Min algorithm can be
+                                assigned to a VM. This output is then given as input to the [metaheuristic] algorithm.
+                                As a result, it helps to find the optimal solution compare to the existing algorithm."
+                                <span class="block not-italic font-semibold text-emerald-900 mt-1.5">— Kutipan Mekanisme
+                                    Hybrid Max-Min (Faraj &amp; Inampudi, 2018, Hal. 34)</span>
+                            </blockquote>
+
+                            <blockquote
+                                class="border-l-4 border-slate-400 bg-slate-50 p-3.5 rounded-r-lg text-xs text-slate-700 italic leading-relaxed">
+                                "The main idea of ACO derives from the foraging behavior of ant colonies. When ants
+                                group tries to search for the food, they use a special genius kind of chemical to
+                                communicate with each other. That chemical is referred to as a pheromone."
+                                <span class="block not-italic font-semibold text-slate-800 mt-1.5">— Kutipan Konsep ACO
+                                    (Faraj &amp; Inampudi, 2018, Hal. 35)</span>
+                            </blockquote>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Jurnal 2 & Synthesis -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="px-2.5 py-0.5 rounded bg-amber-50 text-amber-800 text-xs font-bold">Jurnal 2 •
+                                Distributed Resource Scheduling</span>
+                            <span class="text-xs font-mono text-slate-400">SAGE • 2008</span>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-base leading-snug">
+                            "Resource Allocation &amp; Heuristic-Metaheuristic Scheduling in Distributed Sensor &amp;
+                            Computing Networks"
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-1.5">
+                            <strong>Sumber Publikasi:</strong> <em>International Journal of Distributed Sensor
+                                Networks</em> (SAGE Publications)<br />
+                            <strong>DOI:</strong> <code>10.1080/15501320802554976</code>
+                        </p>
+
+                        <div class="mt-4 space-y-3">
+                            <div
+                                class="bg-amber-50/70 border border-amber-200 p-3.5 rounded-lg text-xs text-slate-800 leading-relaxed">
+                                <strong class="text-amber-950 block mb-1">Keterbatasan Heuristik Murni pada Lingkungan
+                                    Terdistribusi:</strong>
+                                Pada jaringan terdistribusi dengan kapasitas node heterogen, penjadwalan heuristik
+                                <em>batch-mode</em> (seperti Min-Min) mengeksekusi alokasi lokal secara deterministik
+                                tanpa mekanisme eksplorasi ulang, sehingga rentan menghasilkan ketidakseimbangan beban
+                                (<em>load imbalance</em>) ketika ukuran tugas bervariasi drastis.
+                            </div>
+
+                            <div
+                                class="bg-slate-50 border border-slate-200 p-3.5 rounded-lg text-xs text-slate-800 leading-relaxed">
+                                <strong class="text-slate-900 block mb-1">Mengapa Hybrid (Heuristik-Metaheuristik) Lebih
+                                    Efektif?</strong>
+                                <ul class="list-disc pl-4 space-y-1 text-slate-700 mt-1">
+                                    <li><strong>Mengatasi Cold-Start Metaheuristik:</strong> GA dan ACO murni yang
+                                        dimulai dari populasi/feromon acak membutuhkan banyak iterasi untuk mencapai
+                                        solusi layak.</li>
+                                    <li><strong>Heuristic Seeding:</strong> Output Max-Min maupun Min-Min menyediakan
+                                        titik awal berkualitas tinggi bagi metaheuristik untuk dioptimasi lebih lanjut.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-200 grid grid-cols-2 gap-3 text-xs">
+                        <div class="p-2.5 rounded-lg bg-indigo-50 border border-indigo-200">
+                            <span class="font-bold text-indigo-900 block">Kandidat 1 (Utama):</span>
+                            <span class="text-indigo-800">Hybrid Max-Min + ACO</span>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-amber-50 border border-amber-200">
+                            <span class="font-bold text-amber-900 block">Kandidat 2 (Pembanding):</span>
+                            <span class="text-amber-800">Hybrid Min-Min + GA</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SLIDE 2: CARA KERJA MAX-MIN + ACO ==================== -->
+        <section class="slide-container" data-slide="2">
+            <div class="mb-6">
+                <span class="text-xs font-bold tracking-widest uppercase text-indigo-600">SLIDE 2 • CARA KERJA ALGORITMA
+                    1 (UTAMA)</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Cara Kerja Hybrid Max-Min + Ant
+                    Colony Optimization (ACO)</h2>
+                <p class="text-slate-600 mt-2 text-sm sm:text-base">
+                    Menggunakan jadwal prioritas tugas berat dari <strong>Max-Min</strong> untuk membimbing jejak
+                    feromon awal koloni semut pada <strong>ACO</strong>.
+                </p>
+            </div>
+
+            <!-- 5-Step Flow -->
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 mb-6">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs font-bold text-indigo-600">LANGKAH 1</span>
+                    <h4 class="font-bold text-slate-900 text-sm mt-1">Hitung Matriks ETC</h4>
+                    <p class="text-xs text-slate-600 mt-1">Hitung perkiraan waktu eksekusi setiap tugas $T_i$ pada
+                        setiap virtual machine $VM_j$.</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs font-bold text-indigo-600">LANGKAH 2</span>
+                    <h4 class="font-bold text-slate-900 text-sm mt-1">Eksekusi Max-Min</h4>
+                    <p class="text-xs text-slate-600 mt-1">Cari $CT$ terkecil tiap tugas, lalu pilih tugas dengan $CT$
+                        <strong>terbesar</strong> untuk dijadwalkan lebih dulu.</p>
+                </div>
+                <div class="bg-indigo-50 p-4 rounded-xl border-2 border-indigo-400 shadow-sm">
+                    <span class="text-xs font-bold text-indigo-700">LANGKAH 3 (HYBRID)</span>
+                    <h4 class="font-bold text-indigo-950 text-sm mt-1">Seeding Feromon</h4>
+                    <p class="text-xs text-indigo-900 mt-1">Jalur $(T_i, VM_j)$ hasil Max-Min diberi bonus feromon awal
+                        ($\tau_0 + 2.0$) agar semut terarah.</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs font-bold text-indigo-600">LANGKAH 4</span>
+                    <h4 class="font-bold text-slate-900 text-sm mt-1">Konstruksi Solusi</h4>
+                    <p class="text-xs text-slate-600 mt-1">25 semut menyusun pemetaan tugas ke VM berdasarkan
+                        probabilitas feromon dan kecepatan VM.</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs font-bold text-indigo-600">LANGKAH 5</span>
+                    <h4 class="font-bold text-slate-900 text-sm mt-1">Update Feromon</h4>
+                    <p class="text-xs text-slate-600 mt-1">Lakukan evaporasi ($\rho=0.2$) dan tambahkan feromon elit
+                        pada rute dengan <em>makespan</em> terpendek.</p>
+                </div>
+            </div>
+
+            <!-- Detailed Formulas & Mechanics -->
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-800 mb-3">1. Tahap Heuristik
+                        Max-Min &amp; Informasi Lokal</h3>
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 mb-3 text-center">
+                        $$ET_{ij} = \frac{\text{Length}(T_i)}{\text{MIPS}(VM_j)}, \qquad CT_{ij} = ET_{ij} + RT_j$$
+                    </div>
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 mb-3 text-center">
+                        $$\eta_{ij} = \frac{1}{ET_{ij} + 10^{-6}}$$
+                    </div>
+                    <ul class="text-xs text-slate-700 space-y-1.5">
+                        <li>• <strong>Prioritas Tugas Besar:</strong> Dengan menjadwalkan tugas terlama lebih awal ke VM
+                            tercepat, tugas tersebut berjalan paralel dengan tugas-tugas kecil di VM lain.</li>
+                        <li>• <strong>Visibilitas Heuristik ($\eta_{ij}$):</strong> Nilai berbanding terbalik dengan
+                            waktu eksekusi, sehingga semut secara alami tertarik pada VM ber-MIPS tinggi.</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-slate-800 mb-3">2. Tahap Metaheuristik
+                        Ant Colony Optimization</h3>
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 mb-3 text-center">
+                        $$P_{ij} = \frac{[\tau_{ij}]^\alpha \cdot [\eta_{ij}]^\beta}{\sum_{k=1}^{m} [\tau_{ik}]^\alpha
+                        \cdot [\eta_{ik}]^\beta}$$
+                    </div>
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 mb-3 text-center">
+                        $$\tau_{ij}(t+1) = (1 - \rho)\tau_{ij}(t) + \frac{Q}{\text{Makespan}_{\text{best}}}$$
+                    </div>
+                    <ul class="text-xs text-slate-700 space-y-1.5">
+                        <li>• <strong>Seeding Feromon:</strong> Jalur terpilih dari Max-Min diinisialisasi dengan
+                            $\tau_{ij}(0) = 3.0$ (jalur lain $1.0$, batas bawah $0.01$).</li>
+                        <li>• <strong>Parameter Eksperimen:</strong> $\alpha = 1.0, \beta = 2.0, \rho = 0.2, Q = 100.0$
+                            mencegah konvergensi prematur sekaligus mempertahankan solusi elit.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Parameter Justification -->
+            <div class="bg-indigo-950 text-white rounded-2xl p-5">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-300 mb-3">Konfigurasi Parameter &amp;
+                    Alasan Pemilihan pada Hybrid.java</h4>
+                <div class="grid sm:grid-cols-3 gap-4 text-xs">
+                    <div class="bg-white/10 p-3.5 rounded-xl">
+                        <div class="font-bold text-indigo-200 text-sm mb-1">Populasi = 25 Semut</div>
+                        <p class="text-slate-200 leading-relaxed">Jumlah 25 semut cukup luas untuk mengeksplorasi
+                            kombinasi pemetaan tugas ke 10 VM tanpa meningkatkan waktu eksekusi secara berlebihan
+                            (60–354 ms).</p>
+                    </div>
+                    <div class="bg-white/10 p-3.5 rounded-xl">
+                        <div class="font-bold text-indigo-200 text-sm mb-1">Iterasi = 50 Siklus</div>
+                        <p class="text-slate-200 leading-relaxed">Karena feromon awal sudah dipandu solusi Max-Min,
+                            algoritma mencapai konvergensi dengan tingkat utilisasi VM mencapai 98,9%–99,9% dalam 50
+                            iterasi.</p>
+                    </div>
+                    <div class="bg-white/10 p-3.5 rounded-xl">
+                        <div class="font-bold text-indigo-200 text-sm mb-1">Dynamic Random Seed</div>
+                        <p class="text-slate-200 leading-relaxed">Menggunakan
+                            <code>SecureRandom.nextLong() ^ System.nanoTime()</code> per dataset agar kedua algoritma
+                            diuji pada kondisi heterogenitas VM yang identik.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SLIDE 3: CARA KERJA MIN-MIN + GA ==================== -->
+        <section class="slide-container" data-slide="3">
+            <div class="mb-6">
+                <span class="text-xs font-bold tracking-widest uppercase text-amber-600">SLIDE 3 • CARA KERJA ALGORITMA
+                    2 (PEMBANDING)</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Cara Kerja Hybrid Min-Min + Genetic
+                    Algorithm (GA)</h2>
+                <p class="text-slate-600 mt-2 text-sm sm:text-base">
+                    Memanfaatkan jadwal deterministik dari <strong>Min-Min</strong> sebagai kromosom elit pada generasi
+                    pertama <strong>Genetic Algorithm (GA)</strong> untuk mempercepat evolusi jadwal.
+                </p>
+            </div>
+
+            <!-- 5-Step Flow -->
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 mb-6">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs font-bold text-amber-600">LANGKAH 1</span>
+                    <h4 class="font-bold text-slate-900 text-sm mt-1">Eksekusi Min-Min</h4>
+                    <p class="text-xs text-slate-600 mt-1">Pilih pasangan $(T_i, VM_j)$ dengan <em>Completion Time</em>
+                        <strong>terkecil</strong> secara berulang hingga semua tugas terjadwal.</p>
+                </div>
+                <div class="bg-amber-50 p-4 rounded-xl border-2 border-amber-400 shadow-sm">
+                    <span class="text-xs font-bold text-amber-800">LANGKAH 2 (HYBRID)</span>
+                    <h4 class="font-bold text-amber-950 text-sm mt-1">Chromosome Seeding</h4>
+                    <p class="text-xs text-amber-900 mt-1">Simpan jadwal Min-Min sebagai <strong>Kromosom ke-0</strong>,
+                        lalu bangkitkan 29 kromosom lainnya secara acak.</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs font-bold text-amber-600">LANGKAH 3</span>
+                    <h4 class="font-bold text-slate-900 text-sm mt-1">Evaluasi Fitness</h4>
+                    <p class="text-xs text-slate-600 mt-1">Hitung nilai kebugaran tiap kromosom berdasarkan kebalikan
+                        dari <em>makespan</em> jadwalnya.</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs font-bold text-amber-600">LANGKAH 4</span>
+                    <h4 class="font-bold text-slate-900 text-sm mt-1">Seleksi &amp; Crossover</h4>
+                    <p class="text-xs text-slate-600 mt-1">Pilih induk terbaik via <em>Tournament Selection</em> ($k=3$)
+                        dan tukar gen via <em>Single-Point Crossover</em> ($P_c=0.8$).</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-xs font-bold text-amber-600">LANGKAH 5</span>
+                    <h4 class="font-bold text-slate-900 text-sm mt-1">Mutasi &amp; Elitism</h4>
+                    <p class="text-xs text-slate-600 mt-1">Ubah gen secara acak ($P_m=0.05$) untuk keragaman, lalu
+                        pertahankan kromosom terbaik ke generasi berikutnya.</p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                    <h3 class="text-base font-bold text-slate-900 mb-3">Struktur Kromosom &amp; Populasi Awal (30
+                        Populasi, 50 Generasi)</h3>
+                    <p class="text-xs sm:text-sm text-slate-600 mb-3 leading-relaxed">
+                        Setiap kromosom direpresentasikan sebagai vektor integer berukuran $N$ tugas, di mana indeks
+                        menunjukkan ID Tugas dan nilainya menunjukkan ID VM:
+                    </p>
+                    <div class="bg-slate-900 text-emerald-400 font-mono text-xs p-4 rounded-xl mb-3 overflow-x-auto">
+                        Kromosom[0] (Min-Min Seed) : [ VM_1, VM_2, VM_2, VM_0, VM_1 ]<br />
+                        Kromosom[1] (Random Init) : [ VM_0, VM_1, VM_0, VM_2, VM_2 ]<br />
+                        ...<br />
+                        Kromosom[29] (Random Init) : [ VM_2, VM_0, VM_1, VM_1, VM_0 ]
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 p-3.5 rounded-xl text-xs text-amber-950">
+                        <strong>Fungsi Fitness:</strong> $$\text{Fitness}(K) = \frac{1}{\max_{j \in VM} \sum_{i \in K_j}
+                        ET_{ij}}$$
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                    <h3 class="text-base font-bold text-slate-900 mb-3">Karakteristik &amp; Temuan pada Dataset GoCJ
+                    </h3>
+                    <ul class="space-y-3 text-xs sm:text-sm text-slate-700">
+                        <li class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                            <strong class="text-slate-900 block mb-0.5">Kelebihan Komputasi Cepat:</strong>
+                            Waktu eksekusi algoritmanya (<em>Algo Execution Time</em>) 3–4 kali lebih singkat dibanding
+                            ACO (19,6 ms pada 100 task hingga 92,5 ms pada 1000 task) karena operasi vektor integer yang
+                            ringan.
+                        </li>
+                        <li class="p-3 rounded-xl bg-rose-50/70 border border-rose-200">
+                            <strong class="text-rose-950 block mb-0.5">Keterbatasan Keseimbangan Beban:</strong>
+                            Karena Min-Min mendahulukan tugas kecil, ketimpangan beban (<em>DoI</em>) pada GA masih
+                            berkisar antara <strong>0,069 hingga 0,271</strong>, jauh lebih tinggi dibanding Max-Min +
+                            ACO yang mampu menekan DoI hingga <strong>0,002 – 0,027</strong>.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SLIDE 4: SIMULASI KECIL INTERAKTIF ==================== -->
+        <section class="slide-container" data-slide="4">
+            <div class="mb-6">
+                <span class="text-xs font-bold tracking-widest uppercase text-indigo-600">SLIDE 4 • SIMULASI KECIL
+                    STEP-BY-STEP</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Simulasi Manual: 3 Tugas ($T_1, T_2,
+                    T_3$) pada 2 VM ($VM_1, VM_2$)</h2>
+                <p class="text-slate-600 mt-2 text-sm sm:text-base">
+                    Pilih algoritma hybrid dan klik tahapan langkah di bawah untuk melihat mekanisme penjadwalan tugas
+                    ke VM.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-6">
+                <!-- Left Column: Input Matrix -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800 mb-3">Matriks Execution Time ($ET_{ij}$)</h3>
+                        <table class="w-full text-center border-collapse text-sm mb-4">
+                            <thead>
+                                <tr class="bg-slate-900 text-white">
+                                    <th class="p-2.5 border border-slate-700">Tugas</th>
+                                    <th class="p-2.5 border border-slate-700">$VM_1$</th>
+                                    <th class="p-2.5 border border-slate-700">$VM_2$</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="p-2.5 border border-slate-200 font-bold">$T_1$ (Ringan)</td>
+                                    <td
+                                        class="p-2.5 border border-slate-200 bg-emerald-50 font-semibold text-emerald-700">
+                                        2 detik</td>
+                                    <td class="p-2.5 border border-slate-200">4 detik</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2.5 border border-slate-200 font-bold">$T_2$ (Sedang)</td>
+                                    <td class="p-2.5 border border-slate-200">6 detik</td>
+                                    <td
+                                        class="p-2.5 border border-slate-200 bg-emerald-50 font-semibold text-emerald-700">
+                                        3 detik</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2.5 border border-slate-200 font-bold">$T_3$ (Berat)</td>
+                                    <td class="p-2.5 border border-slate-200">8 detik</td>
+                                    <td
+                                        class="p-2.5 border border-slate-200 bg-emerald-50 font-semibold text-emerald-700">
+                                        5 detik</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Sel berwarna hijau menunjukkan waktu eksekusi tercepat untuk tiap tugas. Perhatikan bahwa
+                            $VM_2$ lebih cepat untuk $T_2$ dan $T_3$, sehingga rentan mengalami penumpukan beban jika
+                            tidak dioptimasi.
+                        </p>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-200 text-xs text-slate-500">
+                        <strong>Rumus Evaluasi:</strong><br />
+                        $\text{Makespan} = \max(\text{Load}(VM_1), \text{Load}(VM_2))$<br />
+                        $\text{DoI} = \frac{T_{\max} - T_{\min}}{T_{\text{avg}}}$
+                    </div>
+                </div>
+
+                <!-- Right Column: Interactive Step Simulation -->
+                <div
+                    class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <!-- Algorithm Selector Tabs -->
+                        <div
+                            class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-200">
+                            <div class="flex gap-2">
+                                <button type="button" data-algo="aco"
+                                    class="algo-tab px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm">
+                                    Simulasi 1: Max-Min + ACO
+                                </button>
+                                <button type="button" data-algo="ga"
+                                    class="algo-tab px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">
+                                    Simulasi 2: Min-Min + GA
+                                </button>
+                            </div>
+                            <div class="flex gap-1.5">
+                                <button type="button" data-simstep="1"
+                                    class="step-tab px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white">Tahap
+                                    1</button>
+                                <button type="button" data-simstep="2"
+                                    class="step-tab px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Tahap
+                                    2</button>
+                                <button type="button" data-simstep="3"
+                                    class="step-tab px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Tahap
+                                    3 (Akhir)</button>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Step Title & Badge -->
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                            <h4 id="simStepTitle" class="text-base font-bold text-slate-900">Tahap 1: Seleksi Tugas
+                                Terberat (Heuristik Max-Min)</h4>
+                            <span id="simStepBadge"
+                                class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-bold">Makespan
+                                Sementara: 6 detik</span>
+                        </div>
+
+                        <!-- Visual Load Bars for VM1 and VM2 -->
+                        <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-4 space-y-3">
+                            <div>
+                                <div class="flex justify-between text-xs font-semibold mb-1">
+                                    <span class="text-slate-700">Beban Virtual Machine 1 ($VM_1$)</span>
+                                    <span id="simVm1Label" class="text-indigo-700 font-bold">6 detik — [ T2 ]</span>
+                                </div>
+                                <div class="w-full bg-white h-4 rounded-full overflow-hidden border border-slate-200">
+                                    <div id="simVm1Bar" class="bar-fill bg-indigo-600 h-full" style="width: 60%"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-xs font-semibold mb-1">
+                                    <span class="text-slate-700">Beban Virtual Machine 2 ($VM_2$)</span>
+                                    <span id="simVm2Label" class="text-indigo-700 font-bold">5 detik — [ T3 ]</span>
+                                </div>
+                                <div class="w-full bg-white h-4 rounded-full overflow-hidden border border-slate-200">
+                                    <div id="simVm2Bar" class="bar-fill bg-indigo-500 h-full" style="width: 50%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step-by-step Calculation Log -->
+                        <div id="simStepDetail"
+                            class="bg-white border border-slate-200 rounded-xl p-4 text-xs sm:text-sm text-slate-700 space-y-2 leading-relaxed">
+                            <p><strong>Iterasi 1 Max-Min:</strong> Waktu selesai minimum tiap tugas adalah $T_1
+                                \rightarrow VM_1 (2\text{s})$, $T_2 \rightarrow VM_2 (3\text{s})$, dan $T_3 \rightarrow
+                                VM_2 (5\text{s})$. Nilai <strong>maksimum</strong> adalah $T_3$ ($5\text{s}$), maka
+                                jadwalkan <strong>$T_3 \rightarrow VM_2$</strong>.</p>
+                            <p><strong>Iterasi 2 Max-Min:</strong> Sisa $T_1$ (min di $VM_1 = 2\text{s}$) dan $T_2$ (min
+                                di $VM_1 = 6\text{s}$, di $VM_2 = 3+5=8\text{s} \rightarrow$ min di $VM_1 = 6\text{s}$).
+                                Nilai maksimum adalah $T_2$ ($6\text{s}$), maka jadwalkan <strong>$T_2 \rightarrow
+                                    VM_1$</strong>.</p>
+                        </div>
+                    </div>
+
+                    <div id="simStepMetricBox"
+                        class="mt-4 pt-3 border-t border-slate-200 flex flex-wrap justify-between gap-2 text-xs font-semibold text-slate-600">
+                        <span>Status Antrean: T1 belum terjadwal</span>
+                        <span>Degree of Imbalance (DoI): 0,18</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SLIDE 5: HASIL SIMULASI REAL & KESIMPULAN ==================== -->
+        <section class="slide-container" data-slide="5">
+            <div class="mb-6">
+                <span class="text-xs font-bold tracking-widest uppercase text-indigo-600">SLIDE 5 • HASIL SIMULASI
+                    CLOUDSIM (GOCJ 100–1000 TASKS) &amp; KESIMPULAN</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Hasil Pengujian Aktual CloudSim
+                    &amp; Kesimpulan Akhir</h2>
+                <p class="text-slate-600 mt-2 text-sm sm:text-base">
+                    Data aktual hasil eksekusi <code>Hybrid.java</code> pada <strong>10 VM heterogen (500–2.500
+                        MIPS)</strong> menggunakan 10 berkas dataset <strong>GoCJ (100 s.d. 1.000 Task)</strong>.
+                </p>
+            </div>
+
+            <!-- Filter Tabs for View Mode -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm mb-6">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-700">Tampilan Data Hasil Simulasi
+                        (ringkasan_simulasi.txt):</div>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" data-filter="all"
+                            class="filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white">Semua
+                            Skala (100–1000)</button>
+                        <button type="button" data-filter="low"
+                            class="filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Skala
+                            Kecil (100–300)</button>
+                        <button type="button" data-filter="mid"
+                            class="filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Skala
+                            Menengah (400–700)</button>
+                        <button type="button" data-filter="high"
+                            class="filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Skala
+                            Besar (800–1000)</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-900 text-white">
+                                <th class="p-2.5">N Tasks</th>
+                                <th class="p-2.5 text-amber-300">Makespan GA</th>
+                                <th class="p-2.5 text-emerald-300 bg-indigo-950">Makespan ACO ★</th>
+                                <th class="p-2.5 text-indigo-200">Selisih Makespan</th>
+                                <th class="p-2.5 text-amber-300">DoI GA</th>
+                                <th class="p-2.5 text-emerald-300 bg-indigo-950">DoI ACO ★</th>
+                                <th class="p-2.5 text-amber-300">Util GA</th>
+                                <th class="p-2.5 text-emerald-300 bg-indigo-950">Util ACO ★</th>
+                                <th class="p-2.5 text-slate-300">Cost (GA / ACO)</th>
+                                <th class="p-2.5 text-slate-300">Algo Time (GA / ACO)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="realBenchmarkBody" class="divide-y divide-slate-200">
+                            <!-- Populated by JS with exact numbers from ringkasan_simulasi.txt -->
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-xs text-slate-500 mt-3">
+                    *Sumber data: Keluaran aktual simulasi batch CloudSim (<code>ringkasan_simulasi.txt</code>, 25 Nov
+                    2026) dengan <code>COST_PER_SEC = $3.0</code>.
+                </p>
+            </div>
+
+            <!-- Key Quantitative Highlights + Conclusion Cards -->
+            <div class="bg-slate-900 text-white rounded-2xl p-6">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                    <h3 class="text-base font-bold text-indigo-300 uppercase tracking-wider">Kesimpulan Utama
+                        Berdasarkan Data Aktual</h3>
+                    <span
+                        class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-400/30">
+                        Max-Min + ACO Menang 10/10 Skala Dataset
+                    </span>
+                </div>
+                <div class="grid md:grid-cols-3 gap-4 text-xs sm:text-sm">
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10">
+                        <div class="font-bold text-emerald-300 text-base mb-1">1. Makespan Lebih Cepat (10/10 Uji)</div>
+                        <p class="text-slate-200 leading-relaxed">
+                            <strong>Hybrid Max-Min + ACO</strong> mengalahkan Min-Min + GA di seluruh 10 ukuran dataset
+                            GoCJ (100–1.000 tasks), dengan penghematan <em>makespan</em> sebesar <strong>46,9s</strong>
+                            (pada 100 tasks) hingga <strong>401,4s</strong> (pada 900 tasks).
+                        </p>
+                    </div>
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10">
+                        <div class="font-bold text-indigo-300 text-base mb-1">2. Load Balance &amp; Utilisasi Maksimal
+                        </div>
+                        <p class="text-slate-200 leading-relaxed">
+                            <em>Degree of Imbalance (DoI)</em> ACO sangat mendekati nol (<strong>0,002 – 0,027</strong>
+                            vs GA <strong>0,069 – 0,271</strong>), mendorong <em>Resource Utilization</em> mencapai
+                            <strong>98,9% – 99,9%</strong> di seluruh skenario.
+                        </p>
+                    </div>
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10">
+                        <div class="font-bold text-amber-300 text-base mb-1">3. Trade-Off Waktu Komputasi Algoritma
+                        </div>
+                        <p class="text-slate-200 leading-relaxed">
+                            ACO memerlukan waktu komputasi penjadwalan sedikit lebih lama (<strong>60,9 – 354,0
+                                ms</strong> vs GA <strong>19,6 – 92,5 ms</strong>), namun selisih &lt;0,3 detik ini
+                            sangat sepadan karena memangkas waktu eksekusi Cloud hingga ratusan detik.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Slide Switcher -->
+    <footer class="bg-white border-t border-slate-200 py-3 px-6">
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+            <div>Navigasi cepat: klik nomor slide atau tekan <kbd
+                    class="px-1.5 py-0.5 bg-slate-100 border rounded">←</kbd> <kbd
+                    class="px-1.5 py-0.5 bg-slate-100 border rounded">→</kbd> pada keyboard.</div>
+            <div class="flex gap-1.5">
+                <button type="button" data-goto="1"
+                    class="dot-btn px-2.5 py-1 rounded bg-indigo-600 text-white font-bold">1</button>
+                <button type="button" data-goto="2"
+                    class="dot-btn px-2.5 py-1 rounded bg-slate-100 text-slate-700 font-bold">2</button>
+                <button type="button" data-goto="3"
+                    class="dot-btn px-2.5 py-1 rounded bg-slate-100 text-slate-700 font-bold">3</button>
+                <button type="button" data-goto="4"
+                    class="dot-btn px-2.5 py-1 rounded bg-slate-100 text-slate-700 font-bold">4</button>
+                <button type="button" data-goto="5"
+                    class="dot-btn px-2.5 py-1 rounded bg-slate-100 text-slate-700 font-bold">5</button>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            var currentSlide = 1;
+            var totalSlides = 5;
+
+            function updateSlideUI() {
+                var slides = document.querySelectorAll('.slide-container');
+                for (var i = 0; i < slides.length; i++) {
+                    var sNum = parseInt(slides[i].getAttribute('data-slide'), 10);
+                    if (sNum === currentSlide) {
+                        slides[i].classList.add('active');
+                    } else {
+                        slides[i].classList.remove('active');
+                    }
+                }
+
+                var indicator = document.getElementById('slideIndicator');
+                if (indicator) indicator.textContent = 'Slide ' + currentSlide + ' / ' + totalSlides;
+
+                var bar = document.getElementById('progressBar');
+                if (bar) bar.style.width = ((currentSlide / totalSlides) * 100) + '%';
+
+                var dots = document.querySelectorAll('.dot-btn');
+                for (var j = 0; j < dots.length; j++) {
+                    var gNum = parseInt(dots[j].getAttribute('data-goto'), 10);
+                    if (gNum === currentSlide) {
+                        dots[j].className = 'dot-btn px-2.5 py-1 rounded bg-indigo-600 text-white font-bold';
+                    } else {
+                        dots[j].className = 'dot-btn px-2.5 py-1 rounded bg-slate-100 text-slate-700 font-bold hover:bg-slate-200';
+                    }
+                }
+            }
+
+            function goToSlide(n) {
+                if (n >= 1 && n <= totalSlides) {
+                    currentSlide = n;
+                    updateSlideUI();
+                    window.scrollTo(0, 0);
+                }
+            }
+
+            document.getElementById('btnPrev').addEventListener('click', function () {
+                goToSlide(currentSlide - 1);
+            });
+
+            document.getElementById('btnNext').addEventListener('click', function () {
+                goToSlide(currentSlide + 1);
+            });
+
+            var dotButtons = document.querySelectorAll('.dot-btn');
+            for (var d = 0; d < dotButtons.length; d++) {
+                dotButtons[d].addEventListener('click', function () {
+                    var target = parseInt(this.getAttribute('data-goto'), 10);
+                    goToSlide(target);
+                });
+            }
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+                if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+            });
+
+            // Interactive Step Simulation (Slide 4: Supports both ACO and GA modes)
+            var currentAlgo = 'aco';
+            var currentSimStep = 1;
+
+            var simDatabase = {
+                aco: {
+                    1: {
+                        title: 'Tahap 1: Seleksi Tugas Terberat (Heuristik Max-Min)',
+                        badge: 'Makespan Sementara: 6 detik',
+                        badgeClass: 'px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-bold',
+                        vm1Label: '6 detik — [ T2 ]',
+                        vm1Width: '60%',
+                        vm1Color: 'bar-fill bg-indigo-600 h-full',
+                        vm2Label: '5 detik — [ T3 ]',
+                        vm2Width: '50%',
+                        vm2Color: 'bar-fill bg-indigo-500 h-full',
+                        detail: '<p><strong>Iterasi 1 Max-Min:</strong> Waktu selesai minimum tiap tugas adalah $T_1 \\rightarrow VM_1 (2\\text{s})$, $T_2 \\rightarrow VM_2 (3\\text{s})$, dan $T_3 \\rightarrow VM_2 (5\\text{s})$. Nilai <strong>maksimum</strong> adalah $T_3$ ($5\\text{s}$), maka jadwalkan <strong>$T_3 \\rightarrow VM_2$</strong>.</p><p><strong>Iterasi 2 Max-Min:</strong> Sisa $T_1$ (min di $VM_1 = 2\\text{s}$) dan $T_2$ (min di $VM_1 = 6\\text{s}$, di $VM_2 = 3+5=8\\text{s} \\rightarrow$ min di $VM_1 = 6\\text{s}$). Nilai maksimum adalah $T_2$ ($6\\text{s}$), maka jadwalkan <strong>$T_2 \\rightarrow VM_1$</strong>.</p>',
+                        footerLeft: 'Status Antrean: T1 belum terjadwal',
+                        footerRight: 'Degree of Imbalance (DoI): 0,18'
+                    },
+                    2: {
+                        title: 'Tahap 2: Penyelesaian Max-Min & Seeding Feromon ACO',
+                        badge: 'Makespan Max-Min: 8 detik',
+                        badgeClass: 'px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-bold',
+                        vm1Label: '8 detik — [ T2 + T1 ]',
+                        vm1Width: '80%',
+                        vm1Color: 'bar-fill bg-indigo-600 h-full',
+                        vm2Label: '5 detik — [ T3 ]',
+                        vm2Width: '50%',
+                        vm2Color: 'bar-fill bg-indigo-500 h-full',
+                        detail: '<p><strong>Iterasi 3 Max-Min:</strong> Tugas terakhir $T_1$ memiliki $CT$ di $VM_1 = 2+6 = 8\\text{s}$ dan di $VM_2 = 4+5 = 9\\text{s}$. Dipilih yang terkecil yaitu <strong>$T_1 \\rightarrow VM_1$</strong>.</p><p><strong>Seeding Feromon Awal:</strong> Jadwal awal <code>{T1->VM1, T2->VM1, T3->VM2}</code> memperoleh bonus feromon awal $\\tau_0 = 3.0$ (jalur lain $1.0$) sebagai panduan bagi 25 semut ACO.</p>',
+                        footerLeft: 'Jadwal Awal: VM1 = 8s, VM2 = 5s (Total CPU Time = 13s)',
+                        footerRight: 'Degree of Imbalance (DoI): 0,46'
+                    },
+                    3: {
+                        title: 'Tahap 3: Hasil Optimal Eksplorasi Semut ACO',
+                        badge: 'Makespan Optimal: 8 detik (Seimbang)',
+                        badgeClass: 'px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold',
+                        vm1Label: '8 detik — [ T3 ]',
+                        vm1Width: '80%',
+                        vm1Color: 'bar-fill bg-emerald-600 h-full',
+                        vm2Label: '7 detik — [ T1 + T2 ]',
+                        vm2Width: '70%',
+                        vm2Color: 'bar-fill bg-emerald-500 h-full',
+                        detail: '<p><strong>Eksplorasi Probabilistik ($P_{ij}$):</strong> Karena visibilitas heuristik $\\eta_{2,2} = 1/3$ jauh lebih besar daripada $\\eta_{2,1} = 1/6$, semut memindahkan $T_1$ dan $T_2$ ke $VM_2$ ($4+3 = 7\\text{s}$) serta mengalokasikan $T_3$ ke $VM_1$ ($8\\text{s}$).</p><p><strong>Hasil Akhir Konvergen:</strong> Beban kedua VM nyaris identik ($8\\text{s}$ vs $7\\text{s}$) dengan penurunan drastis pada ketimpangan beban.</p>',
+                        footerLeft: 'Jadwal Akhir: {T1->VM2, T2->VM2, T3->VM1}',
+                        footerRight: 'Degree of Imbalance (DoI): 0,13 (Sangat Merata)'
+                    }
+                },
+                ga: {
+                    1: {
+                        title: 'Tahap 1: Seleksi Tugas Terkecil (Heuristik Min-Min)',
+                        badge: 'Makespan Sementara: 3 detik',
+                        badgeClass: 'px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold',
+                        vm1Label: '2 detik — [ T1 ]',
+                        vm1Width: '20%',
+                        vm1Color: 'bar-fill bg-amber-500 h-full',
+                        vm2Label: '3 detik — [ T2 ]',
+                        vm2Width: '30%',
+                        vm2Color: 'bar-fill bg-amber-600 h-full',
+                        detail: '<p><strong>Iterasi 1 Min-Min:</strong> Dari seluruh pasangan tugas-VM, $CT$ terkecil adalah $T_1$ di $VM_1$ ($2\\text{s}$). Maka jadwalkan <strong>$T_1 \\rightarrow VM_1$</strong>.</p><p><strong>Iterasi 2 Min-Min:</strong> Sisa $T_2$ ($CT$ di $VM_1=8\\text{s}$, di $VM_2=3\\text{s}$) dan $T_3$ ($CT$ di $VM_1=10\\text{s}$, di $VM_2=5\\text{s}$). Terkecil adalah $T_2$ di $VM_2$ ($3\\text{s}$), jadwalkan <strong>$T_2 \\rightarrow VM_2$</strong>.</p>',
+                        footerLeft: 'Status Antrean: Tugas besar T3 tertinggal di akhir',
+                        footerRight: 'Degree of Imbalance (DoI): 0,40'
+                    },
+                    2: {
+                        title: 'Tahap 2: Penumpukan Min-Min & Chromosome Seeding GA',
+                        badge: 'Makespan Min-Min: 8 detik (Timpang)',
+                        badgeClass: 'px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-bold',
+                        vm1Label: '2 detik — [ T1 ]',
+                        vm1Width: '20%',
+                        vm1Color: 'bar-fill bg-amber-500 h-full',
+                        vm2Label: '8 detik — [ T2 + T3 ]',
+                        vm2Width: '80%',
+                        vm2Color: 'bar-fill bg-rose-500 h-full',
+                        detail: '<p><strong>Iterasi 3 Min-Min:</strong> Tugas besar $T_3$ memiliki $CT$ di $VM_1 = 8+2 = 10\\text{s}$ dan di $VM_2 = 5+3 = 8\\text{s}$. Dipilih $VM_2$, sehingga $T_2$ dan $T_3$ menumpuk di $VM_2$ ($8\\text{s}$), sementara $VM_1$ hanya bekerja $2\\text{s}$.</p><p><strong>Chromosome Seeding:</strong> Jadwal <code>[VM1, VM2, VM2]</code> dimasukkan sebagai <strong>Kromosom_0</strong> pada populasi awal GA.</p>',
+                        footerLeft: 'Kromosom_0: [VM1, VM2, VM2] — VM1 menganggur 6 detik',
+                        footerRight: 'Degree of Imbalance (DoI): 1,20 (Tinggi)'
+                    },
+                    3: {
+                        title: 'Tahap 3: Hasil Evolusi Crossover & Mutasi GA',
+                        badge: 'Makespan Optimal: 8 detik',
+                        badgeClass: 'px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold',
+                        vm1Label: '8 detik — [ T1 + T2 ]',
+                        vm1Width: '80%',
+                        vm1Color: 'bar-fill bg-emerald-600 h-full',
+                        vm2Label: '5 detik — [ T3 ]',
+                        vm2Width: '50%',
+                        vm2Color: 'bar-fill bg-emerald-500 h-full',
+                        detail: '<p><strong>Operasi Genetika:</strong> Melalui <em>Single-Point Crossover</em> antara Kromosom_0 <code>[VM1 | VM2, VM2]</code> dengan kromosom acak <code>[VM2 | VM1, VM2]</code> serta mutasi gen, dihasilkan anak <strong><code>[VM1, VM1, VM2]</code></strong>.</p><p><strong>Hasil Akhir Evolusi:</strong> Beban $VM_1$ menjadi $2+6 = 8\\text{s}$ dan $VM_2$ menjadi $5\\text{s}$, memperbaiki ketimpangan awal Min-Min.</p>',
+                        footerLeft: 'Kromosom Terbaik: [VM1, VM1, VM2]',
+                        footerRight: 'Degree of Imbalance (DoI): 0,46'
+                    }
+                }
+            };
+
+            function renderSimulationBox() {
+                var data = simDatabase[currentAlgo][currentSimStep];
+                document.getElementById('simStepTitle').textContent = data.title;
+                var badge = document.getElementById('simStepBadge');
+                badge.textContent = data.badge;
+                badge.className = data.badgeClass;
+
+                document.getElementById('simVm1Label').textContent = data.vm1Label;
+                var bar1 = document.getElementById('simVm1Bar');
+                bar1.style.width = data.vm1Width;
+                bar1.className = data.vm1Color;
+
+                document.getElementById('simVm2Label').textContent = data.vm2Label;
+                var bar2 = document.getElementById('simVm2Bar');
+                bar2.style.width = data.vm2Width;
+                bar2.className = data.vm2Color;
+
+                document.getElementById('simStepDetail').innerHTML = data.detail;
+                document.getElementById('simStepMetricBox').innerHTML =
+                    '<span>' + data.footerLeft + '</span><span>' + data.footerRight + '</span>';
+
+                var algoTabs = document.querySelectorAll('.algo-tab');
+                for (var a = 0; a < algoTabs.length; a++) {
+                    var isSel = algoTabs[a].getAttribute('data-algo') === currentAlgo;
+                    algoTabs[a].className = isSel
+                        ? 'algo-tab px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm'
+                        : 'algo-tab px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200';
+                }
+
+                var stepTabs = document.querySelectorAll('.step-tab');
+                for (var s = 0; s < stepTabs.length; s++) {
+                    var sVal = parseInt(stepTabs[s].getAttribute('data-simstep'), 10);
+                    stepTabs[s].className = (sVal === currentSimStep)
+                        ? 'step-tab px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white'
+                        : 'step-tab px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200';
+                }
+
+                if (typeof renderMathInElement === 'function') {
+                    renderMathInElement(document.getElementById('simStepDetail'), {
+                        delimiters: [
+                            { left: '$$', right: '$$', display: true },
+                            { left: '$', right: '$', display: false }
+                        ],
+                        throwOnError: false
+                    });
+                }
+            }
+
+            var algoTabBtns = document.querySelectorAll('.algo-tab');
+            for (var at = 0; at < algoTabBtns.length; at++) {
+                algoTabBtns[at].addEventListener('click', function () {
+                    currentAlgo = this.getAttribute('data-algo');
+                    currentSimStep = 1;
+                    renderSimulationBox();
+                });
+            }
+
+            var stepTabBtns = document.querySelectorAll('.step-tab');
+            for (var st = 0; st < stepTabBtns.length; st++) {
+                stepTabBtns[st].addEventListener('click', function () {
+                    currentSimStep = parseInt(this.getAttribute('data-simstep'), 10);
+                    renderSimulationBox();
+                });
+            }
+
+            // Exact Actual Data from ringkasan_simulasi.txt (Slide 5)
+            var realResults = [
+                { n: 100, msGa: '899.7s', msAco: '852.8s', diff: '-46.9s (-5.2%)', doiGa: '0.160', doiAco: '0.027', utilGa: '93.1%', utilAco: '98.9%', cost: '$25,131 / $25,297', time: '19.6 / 60.9 ms' },
+                { n: 200, msGa: '1704.7s', msAco: '1605.2s', diff: '-99.5s (-5.8%)', doiGa: '0.271', doiAco: '0.011', utilGa: '94.3%', utilAco: '99.6%', cost: '$48,221 / $47,953', time: '28.2 / 88.6 ms' },
+                { n: 300, msGa: '2299.2s', msAco: '2248.1s', diff: '-51.1s (-2.2%)', doiGa: '0.069', doiAco: '0.003', utilGa: '97.7%', utilAco: '99.8%', cost: '$67,367 / $67,336', time: '26.3 / 130.2 ms' },
+                { n: 400, msGa: '4406.1s', msAco: '4154.9s', diff: '-251.2s (-5.7%)', doiGa: '0.207', doiAco: '0.007', utilGa: '94.3%', utilAco: '99.8%', cost: '$124,682 / $124,396', time: '31.5 / 152.4 ms' },
+                { n: 500, msGa: '4375.9s', msAco: '4199.2s', diff: '-176.7s (-4.0%)', doiGa: '0.092', doiAco: '0.005', utilGa: '95.8%', utilAco: '99.8%', cost: '$125,812 / $125,741', time: '36.9 / 170.9 ms' },
+                { n: 600, msGa: '5623.5s', msAco: '5493.2s', diff: '-130.3s (-2.3%)', doiGa: '0.135', doiAco: '0.003', utilGa: '96.8%', utilAco: '99.9%', cost: '$163,310 / $164,640', time: '45.3 / 207.5 ms' },
+                { n: 700, msGa: '6782.1s', msAco: '6485.2s', diff: '-296.9s (-4.4%)', doiGa: '0.186', doiAco: '0.004', utilGa: '94.8%', utilAco: '99.9%', cost: '$192,795 / $194,383', time: '53.3 / 246.8 ms' },
+                { n: 800, msGa: '6609.1s', msAco: '6389.1s', diff: '-220.0s (-3.3%)', doiGa: '0.239', doiAco: '0.002', utilGa: '93.7%', utilAco: '99.9%', cost: '$185,812 / $191,522', time: '64.6 / 280.0 ms' },
+                { n: 900, msGa: '9299.7s', msAco: '8898.3s', diff: '-401.4s (-4.3%)', doiGa: '0.180', doiAco: '0.003', utilGa: '94.4%', utilAco: '99.9%', cost: '$263,342 / $266,631', time: '68.7 / 314.7 ms' },
+                { n: 1000, msGa: '7638.4s', msAco: '7412.9s', diff: '-225.5s (-3.0%)', doiGa: '0.105', doiAco: '0.003', utilGa: '96.0%', utilAco: '99.9%', cost: '$219,898 / $222,191', time: '92.5 / 354.0 ms' }
+            ];
+
+            function renderBenchmarkTable(filterMode) {
+                var tbody = document.getElementById('realBenchmarkBody');
+                var filtered = [];
+                for (var i = 0; i < realResults.length; i++) {
+                    var row = realResults[i];
+                    if (filterMode === 'all') filtered.push(row);
+                    else if (filterMode === 'low' && row.n <= 300) filtered.push(row);
+                    else if (filterMode === 'mid' && row.n >= 400 && row.n <= 700) filtered.push(row);
+                    else if (filterMode === 'high' && row.n >= 800) filtered.push(row);
+                }
+
+                var html = '';
+                for (var r = 0; r < filtered.length; r++) {
+                    var item = filtered[r];
+                    var bg = (r % 2 === 1) ? 'bg-slate-50' : '';
+                    html += '<tr class="' + bg + '">' +
+                        '<td class="p-2.5 font-bold text-slate-900">' + item.n + '</td>' +
+                        '<td class="p-2.5 text-amber-800 font-medium">' + item.msGa + '</td>' +
+                        '<td class="p-2.5 text-emerald-700 font-extrabold bg-indigo-50/60">' + item.msAco + '</td>' +
+                        '<td class="p-2.5 text-indigo-700 font-semibold">' + item.diff + '</td>' +
+                        '<td class="p-2.5 text-amber-800">' + item.doiGa + '</td>' +
+                        '<td class="p-2.5 text-emerald-700 font-extrabold bg-indigo-50/60">' + item.doiAco + '</td>' +
+                        '<td class="p-2.5 text-amber-800">' + item.utilGa + '</td>' +
+                        '<td class="p-2.5 text-emerald-700 font-extrabold bg-indigo-50/60">' + item.utilAco + '</td>' +
+                        '<td class="p-2.5 text-slate-600">' + item.cost + '</td>' +
+                        '<td class="p-2.5 text-slate-600">' + item.time + '</td>' +
+                        '</tr>';
+                }
+                tbody.innerHTML = html;
+
+                var filterBtns = document.querySelectorAll('.filter-btn');
+                for (var f = 0; f < filterBtns.length; f++) {
+                    var fVal = filterBtns[f].getAttribute('data-filter');
+                    filterBtns[f].className = (fVal === filterMode)
+                        ? 'filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white'
+                        : 'filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200';
+                }
+            }
+
+            var filterButtons = document.querySelectorAll('.filter-btn');
+            for (var fb = 0; fb < filterButtons.length; fb++) {
+                filterButtons[fb].addEventListener('click', function () {
+                    renderBenchmarkTable(this.getAttribute('data-filter'));
+                });
+            }
+
+            // Initialize table immediately
+            renderBenchmarkTable('all');
+
+            // Render KaTeX safely when loaded
+            window.addEventListener('load', function () {
+                if (typeof renderMathInElement === 'function') {
+                    renderMathInElement(document.body, {
+                        delimiters: [
+                            { left: '$$', right: '$$', display: true },
+                            { left: '$', right: '$', display: false }
+                        ],
+                        throwOnError: false
+                    });
+                }
+            });
+        })();
+    </script>
+</body>
+
+</html>
