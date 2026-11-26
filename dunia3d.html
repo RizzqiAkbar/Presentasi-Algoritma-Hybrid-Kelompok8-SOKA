@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cloud Ops 3D: Simulasi Penjadwalan Hybrid (Kelompok 8 SOKA)</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #1c0a3b; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1e1b3a; }
+  #c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+  .card { background: #fdf0d5; border-radius: 14px; box-shadow: 0 8px 28px rgba(0,0,0,.35); }
+  #title { position: fixed; left: 18px; top: 18px; padding: 14px 16px; max-width: 270px; }
+  #title small { font-size: 10px; letter-spacing: .14em; font-weight: 800; color: #5b4b3a; }
+  #title h1 { margin: 2px 0 10px; font-size: 24px; letter-spacing: .02em; }
+  .btn { border: 0; border-radius: 10px; padding: 9px 12px; font-weight: 800; font-size: 12px; cursor: pointer; color: #fff; background: #3f6f68; }
+  .btn:hover { filter: brightness(1.1); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn.run { background: #16a34a; } .btn.reset { background: #64748b; } .btn.aco { background: #4f46e5; } .btn.ga { background: #d97706; }
+  #buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  #panel { position: fixed; right: 18px; top: 18px; width: 250px; padding: 12px 14px; font-size: 12px; }
+  #panel h3 { margin: 0 0 8px; font-size: 13px; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .stat { background: #fff8e8; border: 1px solid #ead9b5; border-radius: 10px; padding: 6px 8px; }
+  .stat b { display: block; font-size: 17px; transition: transform .2s; }
+  .stat span { color: #6b5d48; font-size: 10px; font-weight: 700; }
+  .stat.wide { grid-column: span 2; }
+  #chromo { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 11px; font-weight: 700; }
+  .gene { color: #fff; padding: 2px 7px; border-radius: 7px; background: #94a3b8; font-size: 11px; font-weight: 700; }
+  #hint { position: fixed; left: 50%; bottom: 62px; transform: translateX(-50%); max-width: min(760px, 92vw); text-align: center; background: rgba(20,8,45,.86); color: #fff; padding: 11px 18px; border-radius: 12px; font-size: 14px; font-weight: 700; border: 1px solid rgba(255,255,255,.15); }
+  #hint.watch { background: rgba(67,56,202,.92); }
+  #help { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); color: #e9defc; font-size: 12px; background: rgba(20,8,45,.55); padding: 6px 14px; border-radius: 999px; white-space: nowrap; }
+  kbd { background: rgba(255,255,255,.18); border-radius: 5px; padding: 1px 6px; font-weight: 700; }
+  #phase { position: fixed; left: 50%; top: 18px; transform: translateX(-50%); display: none; padding: 10px 16px; font-size: 13px; font-weight: 800; text-align: center; max-width: min(560px, 90vw); }
+  #phase .row { margin-top: 6px; font-weight: 600; font-size: 12px; }
+  #result { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(560px, 92vw); padding: 20px 22px; display: none; animation: pop .35s ease-out; }
+  @keyframes pop { from { opacity: 0; transform: translate(-50%, -46%); } }
+  #stars { font-size: 46px; line-height: 1; letter-spacing: 4px; }
+  .star { display: inline-block; color: #d6c9a8; } .star.on { color: #f59e0b; animation: sp .6s cubic-bezier(.34,1.56,.64,1) both; animation-delay: var(--d); }
+  @keyframes sp { from { transform: scale(0) rotate(-45deg); opacity: 0; } }
+  #result h2 { margin: 6px 0 4px; font-size: 17px; } #result p { margin: 0; font-size: 13px; line-height: 1.5; }
+  .refs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 12px; font-size: 11px; }
+  .refs div { background: #fff8e8; border: 1px solid #ead9b5; border-radius: 8px; padding: 5px 8px; }
+
+  #err { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; color: #fff; text-align: center; padding: 30px; font-size: 15px; }
+</style>
+</head>
+<body>
+<canvas id="c" tabindex="0"></canvas>
+
+<div id="title" class="card">
+  <small>KELOMPOK 8 • SOKA</small>
+  <h1>CLOUD OPS 3D</h1>
+  <div style="font-size:12px;color:#5b4b3a;font-weight:600">Simulasi 3D: Max-Min + ACO vs Min-Min + GA (3 Tugas, 2 VM)</div>
+  <div id="buttons">
+    <button class="btn run" id="bRun" disabled>▶ Jalankan</button>
+    <button class="btn reset" id="bReset">↺ Reset</button>
+    <button class="btn aco" id="bAco">🐜 Tonton Max-Min + ACO</button>
+    <button class="btn ga" id="bGa">🧬 Tonton Min-Min + GA</button>
+  </div>
+</div>
+
+<div id="panel" class="card">
+  <h3>Papan Skor</h3>
+  <div class="stats">
+    <div class="stat"><span>Beban VM1</span><b id="sV0" style="color:#4f46e5">0 s</b></div>
+    <div class="stat"><span>Beban VM2</span><b id="sV1" style="color:#d97706">0 s</b></div>
+    <div class="stat"><span>Makespan</span><b id="sM" style="color:#e11d48">–</b></div>
+    <div class="stat"><span>DoI (ketimpangan)</span><b id="sD">–</b></div>
+    <div class="stat wide"><span>Utilisasi VM</span><b id="sU" style="color:#15803d">–</b></div>
+  </div>
+  <div id="chromo"></div>
+  <div style="margin-top:6px;font-size:10px;color:#6b5d48;font-weight:600">Jadwal Anda = kromosom GA = jalur semut ACO</div>
+</div>
+
+<div id="phase" class="card"></div>
+<div id="hint">Dekati sebuah kotak tugas lalu tekan E untuk mengambilnya.</div>
+<div id="help"><kbd>W A S D</kbd> / <kbd>↑ ← ↓ →</kbd> gerak &nbsp; <kbd>E</kbd> / <kbd>Spasi</kbd> ambil · taruh · aktifkan &nbsp; <kbd>R</kbd> reset &nbsp; <kbd>M</kbd> musik &nbsp; <kbd>Esc</kbd> keluar</div>
+<div style="position:fixed;right:18px;bottom:18px;display:flex;gap:8px;z-index:50">
+  <button class="btn reset" id="bMusic">🔊 Musik: nyala</button>
+  <button class="btn" id="close" style="background:#4338ca">← Kembali ke presentasi</button>
+</div>
+
+<div id="result" class="card">
+  <div id="stars"></div>
+  <h2 id="rTitle"></h2>
+  <p id="rMsg"></p>
+  <div class="refs">
+    <div><b>Heuristik Max-Min</b><br>8 s · DoI 0,46 · Util 81%</div>
+    <div><b>Heuristik Min-Min</b><br>8 s · DoI 1,20 · Util 63%</div>
+    <div style="background:#e8e7ff"><b>Hybrid Max-Min + ACO ★</b><br>8 s · DoI 0,13 · Util 94%</div>
+    <div style="background:#fff0d6"><b>Hybrid Min-Min + GA</b><br>8 s · DoI 0,46 · Util 81%</div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:8px"><button class="btn reset" id="rAgain">↺ Main lagi</button><button class="btn" id="rHide">Lanjut lihat dunia</button></div>
+</div>
+<div id="err">Dunia 3D butuh WebGL dan koneksi internet (Three.js dimuat dari CDN). Coba buka di Chrome atau Edge terbaru.</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script>
+(function () {
+  if (typeof THREE === 'undefined') { document.getElementById('err').style.display = 'flex'; return; }
+  var V3 = THREE.Vector3;
+  function $(id) { return document.getElementById(id); }
+  function f2(x) { return x.toFixed(2).replace('.', ','); }
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function nextFrame() { return new Promise(function (r) { requestAnimationFrame(r); }); }
+
+  // ---------- data (sama dengan simulator slide 4) ----------
+  var ET = [[2, 4], [6, 3], [8, 5]];
+  var NAMES = ['T1', 'T2', 'T3'], LEVEL = ['Ringan', 'Sedang', 'Berat'];
+  var TCOL = [0x38bdf8, 0xa78bfa, 0x34d399], VMCOL = ['#6366f1', '#f59e0b'], VMHEX = [0x6366f1, 0xf59e0b];
+  var LANE_X0 = -3, LANE_Z = [-2.6, 2.6], SCALE = 16, TRAY_X = -9, TRAY_Z = [-4.5, 0, 4.5];
+  var TOP = 0.25;                                   // permukaan pulau
+  var G = { assign: [null, null, null], order: [[], []], held: null, busy: false, auto: false, token: 0, start: [0, 0, 0], dur: [0, 0, 0], run: null, focusKey: '' };
+
+  // ---------- renderer, scene, kamera ----------
+  var canvas = $('c'), renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true }); }
+  catch (e) { $('err').style.display = 'flex'; return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x1c0a3b); scene.fog = new THREE.Fog(0x1c0a3b, 48, 120);
+  var cam = new THREE.PerspectiveCamera(38, 1, 0.1, 300);
+  scene.add(new THREE.HemisphereLight(0xffd6e8, 0x2a1050, 0.55));
+  var sun = new THREE.DirectionalLight(0xfff0dd, 1.05);
+  sun.position.set(16, 26, 12); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+  var sc = sun.shadow.camera; sc.left = -30; sc.right = 30; sc.top = 24; sc.bottom = -24; sc.near = 1; sc.far = 80;
+  sun.shadow.bias = -0.0004;
+  scene.add(sun); sun.target.position.set(4, 0, 0); scene.add(sun.target);
+
+  function canvasTex(w, h, draw) {
+    var cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    draw(cv.getContext('2d'), w, h); var t = new THREE.CanvasTexture(cv);
+    if (THREE.SRGBColorSpace) t.colorSpace = THREE.SRGBColorSpace; else if (THREE.sRGBEncoding) t.encoding = THREE.sRGBEncoding;
+    return t;
+  }
+  function rrect(c, x, y, w, h, r) {
+    c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+  }
+
+  // lantai ungu bertanda ×
+  var ft = canvasTex(256, 256, function (c, w, h) {
+    c.fillStyle = '#21093f'; c.fillRect(0, 0, w, h);
+    c.strokeStyle = 'rgba(124,92,255,.35)'; c.lineWidth = 2; c.beginPath();
+    c.moveTo(0, 0); c.lineTo(w, h); c.moveTo(w, 0); c.lineTo(0, h); c.stroke();
+    c.strokeStyle = '#7c5cff'; c.lineWidth = 5; var m = w / 2, s = 10; c.beginPath();
+    c.moveTo(m - s, m - s); c.lineTo(m + s, m + s); c.moveTo(m + s, m - s); c.lineTo(m - s, m + s); c.stroke();
+  });
+  ft.wrapS = ft.wrapT = THREE.RepeatWrapping; ft.repeat.set(50, 50); ft.anisotropy = 8;
+  var floor = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), new THREE.MeshStandardMaterial({ map: ft, roughness: 1 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = -0.6; floor.receiveShadow = true; scene.add(floor);
+
+  // pulau hangat dengan tepi bercahaya
+  var tileTex = canvasTex(128, 128, function (c, w, h) {
+    c.fillStyle = '#f08a55'; c.fillRect(0, 0, w, h);
+    c.strokeStyle = 'rgba(190,80,40,.35)'; c.lineWidth = 3; c.strokeRect(1.5, 1.5, w - 3, h - 3);
+    for (var i = 0; i < 40; i++) { c.fillStyle = 'rgba(255,225,190,' + (Math.random() * .12) + ')'; c.fillRect(Math.random() * w, Math.random() * h, 6, 6); }
+  });
+  tileTex.wrapS = tileTex.wrapT = THREE.RepeatWrapping; tileTex.repeat.set(11, 7); tileTex.anisotropy = 8;
+  var island = new THREE.Mesh(new THREE.BoxGeometry(34, 0.5, 21.5), new THREE.MeshStandardMaterial({ map: tileTex, roughness: .9 }));
+  island.position.set(4, 0, 0.25); island.receiveShadow = true; scene.add(island);
+  var rim = new THREE.Mesh(new THREE.BoxGeometry(35.2, 0.36, 22.7), new THREE.MeshBasicMaterial({ color: 0xffd6ef }));
+  rim.position.set(4, -0.08, 0.25); scene.add(rim);
+
+  // ---------- label sprite ----------
+  function makeSprite(w, h) {
+    var sp = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthTest: false }));
+    sp.scale.set(w, h, 1); sp.renderOrder = 10; sp.userData.key = ''; return sp;
+  }
+  function setLabel(sp, lines, accent) {
+    var key = lines.join('|') + accent; if (sp.userData.key === key) return; sp.userData.key = key;
+    var tex = canvasTex(512, 160, function (c, w, h) {
+      rrect(c, 6, 6, w - 12, h - 12, 26); c.fillStyle = 'rgba(24,9,52,.88)'; c.fill();
+      c.lineWidth = 6; c.strokeStyle = accent || '#ffffff'; c.stroke();
+      c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle';
+      var fs = 54; c.font = '800 ' + fs + 'px Segoe UI, Roboto, sans-serif';
+      while (c.measureText(lines[0]).width > w - 50 && fs > 22) { fs -= 2; c.font = '800 ' + fs + 'px Segoe UI, Roboto, sans-serif'; }
+      c.fillText(lines[0], w / 2, lines[1] ? 58 : 80);
+      if (lines[1]) { c.font = '600 34px Segoe UI, Roboto, sans-serif'; c.fillStyle = '#e8dcff'; c.fillText(lines[1], w / 2, 114); }
+    });
+    if (sp.material.map) sp.material.map.dispose(); sp.material.map = tex; sp.material.needsUpdate = true;
+  }
+  function tickSprite(txt) {
+    var sp = makeSprite(1.1, 0.55);
+    sp.material.map = canvasTex(128, 64, function (c, w, h) { c.fillStyle = '#e9defc'; c.font = '700 40px Segoe UI, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(txt, w / 2, h / 2); });
+    sp.material.depthTest = true; return sp;
+  }
+
+  // ---------- jalur VM ----------
+  var laneSign = [makeSprite(3.4, 1.06), makeSprite(3.4, 1.06)];
+  for (var v = 0; v < 2; v++) {
+    var slab = new THREE.Mesh(new THREE.BoxGeometry(SCALE + 0.4, 0.12, 2.6), new THREE.MeshStandardMaterial({ color: 0x2d1560, roughness: .8, emissive: VMHEX[v], emissiveIntensity: .12 }));
+    slab.position.set(LANE_X0 + SCALE / 2, TOP + 0.06, LANE_Z[v]); slab.receiveShadow = true; scene.add(slab);
+    var edge = new THREE.Mesh(new THREE.BoxGeometry(SCALE + 0.4, 0.14, 0.12), new THREE.MeshBasicMaterial({ color: VMHEX[v] }));
+    edge.position.set(LANE_X0 + SCALE / 2, TOP + 0.07, LANE_Z[v] + (v === 0 ? 1.36 : -1.36)); scene.add(edge);
+    for (var s = 0; s <= SCALE; s += 2) {
+      var tk = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.02, 2.6), new THREE.MeshBasicMaterial({ color: 0xb9a3f5, transparent: true, opacity: .5 }));
+      tk.position.set(LANE_X0 + s, TOP + 0.13, LANE_Z[v]); scene.add(tk);
+      var ts = tickSprite(String(s)); ts.position.set(LANE_X0 + s, TOP + 0.5, LANE_Z[v] + (v === 0 ? -1.85 : 1.85)); scene.add(ts);
+    }
+    laneSign[v].position.set(LANE_X0 - 2.2, 1.5, LANE_Z[v]); scene.add(laneSign[v]);
+  }
+
+  // penanda makespan, area menganggur, playhead
+  var markMesh = new THREE.Mesh(new THREE.BoxGeometry(0.07, 2.4, 8.6), new THREE.MeshBasicMaterial({ color: 0xff3b6b, transparent: true, opacity: .3 }));
+  markMesh.visible = false; scene.add(markMesh);
+  var markSprite = makeSprite(3.4, 1.06); markSprite.visible = false; scene.add(markSprite);
+  var idleMesh = [], idleSprite = [];
+  for (var q = 0; q < 2; q++) {
+    var im = new THREE.Mesh(new THREE.BoxGeometry(1, 0.08, 2.2), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .2 }));
+    im.visible = false; scene.add(im); idleMesh.push(im);
+    var isp = makeSprite(3, 0.94); isp.visible = false; scene.add(isp); idleSprite.push(isp);
+  }
+  var playhead = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.8, 9), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .85 }));
+  playhead.visible = false; scene.add(playhead);
+
+  // ---------- dekorasi ----------
+  function tree(x, z, sc) {
+    var g = new THREE.Group();
+    var tr = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.32, 1.6, 6), new THREE.MeshStandardMaterial({ color: 0x6b3a2a, flatShading: true })); tr.position.y = 0.8; tr.castShadow = true; g.add(tr);
+    var cols = [0xff5f8f, 0xff7aa6, 0xf0457a];
+    [[0, 2.4, 0, 1.25], [0.7, 2.0, 0.3, 0.85], [-0.6, 2.1, -0.3, 0.9]].forEach(function (b, i) {
+      var m = new THREE.Mesh(new THREE.IcosahedronGeometry(b[3], 0), new THREE.MeshStandardMaterial({ color: cols[i % 3], flatShading: true, roughness: .9 }));
+      m.position.set(b[0], b[1], b[2]); m.castShadow = true; g.add(m);
+    });
+    g.position.set(x, TOP, z); g.scale.setScalar(sc || 1); scene.add(g);
+  }
+  [[-11.5, -9.2], [-7, -9.4], [-2, -9.5], [3, -9.6], [8, -9.4], [13, -9.5], [18.5, -9], [19.5, -5], [19.8, 5], [18.5, 9.4], [-11.8, 9], [-11.6, -6.5]].forEach(function (p, i) { tree(p[0], p[1], 0.9 + (i % 3) * 0.2); });
+  function lamp(x, z) {
+    var g = new THREE.Group();
+    var post = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.13, 2.6, 6), new THREE.MeshStandardMaterial({ color: 0x3a2a63 })); post.position.y = 1.3; post.castShadow = true; g.add(post);
+    var head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xffe08a, emissive: 0xffc24a, emissiveIntensity: 1.4 })); head.position.y = 2.8; g.add(head);
+    var pl = new THREE.PointLight(0xffc870, 0.6, 9); pl.position.y = 2.8; g.add(pl);
+    g.position.set(x, TOP, z); scene.add(g);
+  }
+  lamp(-6.4, -7.4); lamp(-6.4, 7.0); lamp(15.2, -7.4); lamp(15.2, 7.0);
+
+  // ---------- pad aksi ----------
+  var pads = [];
+  function makePad(x, z, color, title, sub, hint, action) {
+    var g = new THREE.Group();
+    var base = new THREE.Mesh(new THREE.CylinderGeometry(1.9, 1.9, 0.14, 40), new THREE.MeshStandardMaterial({ color: 0x2a1458, roughness: .7 })); base.receiveShadow = true; g.add(base);
+    var ringMat = new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: .8 });
+    var ring = new THREE.Mesh(new THREE.TorusGeometry(1.8, 0.1, 8, 48), ringMat); ring.rotation.x = Math.PI / 2; ring.position.y = 0.1; g.add(ring);
+    var spr = makeSprite(4.6, 1.44); spr.position.y = 3.1; setLabel(spr, [title, sub], '#' + color.toString(16).padStart(6, '0')); g.add(spr);
+    g.position.set(x, TOP + 0.07, z); scene.add(g);
+    var p = { x: x, z: z, g: g, ring: ringMat, spr: spr, title: title, sub: sub, hint: hint, action: action, color: color };
+    pads.push(p); return p;
+  }
+  var padReset = makePad(-9, 8, 0x94a3b8, 'RESET', 'kosongkan jalur', 'kosongkan semua jalur (Reset)', function () { doReset(); });
+  var padAco = makePad(2, 8, 0x6366f1, 'ANT RESEARCH PARK', 'tonton Max-Min + ACO', 'tonton Hybrid Max-Min + ACO memainkan level ini', function () { watch('aco'); });
+  var padGa = makePad(9, 8, 0xf59e0b, 'GENE LAB', 'tonton Min-Min + GA', 'tonton Hybrid Min-Min + GA memainkan level ini', function () { watch('ga'); });
+  var padRun = makePad(18, 0, 0x22c55e, '▶ RUN', 'jalankan jadwal', 'jalankan jadwal (eksekusi paralel)', function () { startRun(); });
+
+  // ---------- robot ----------
+  var robot = new THREE.Group(), robotBody = new THREE.Group(); robot.add(robotBody);
+  (function () {
+    var white = new THREE.MeshStandardMaterial({ color: 0xf3eefc, roughness: .45 });
+    var dark = new THREE.MeshStandardMaterial({ color: 0x2b1b4d, roughness: .6 });
+    var glow = new THREE.MeshStandardMaterial({ color: 0x22d3ee, emissive: 0x22d3ee, emissiveIntensity: 1.8 });
+    function add(geo, mat, x, y, z) { var m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; robotBody.add(m); return m; }
+    add(new THREE.CylinderGeometry(0.55, 0.38, 0.28, 12), dark, 0, 0.35, 0);
+    add(new THREE.BoxGeometry(1.1, 0.9, 0.9), white, 0, 1.0, 0);
+    add(new THREE.BoxGeometry(0.5, 0.3, 0.06), glow, 0, 1.05, 0.46);
+    add(new THREE.BoxGeometry(1.0, 0.72, 0.85), white, 0, 1.85, 0);
+    add(new THREE.BoxGeometry(0.8, 0.26, 0.06), glow, 0, 1.88, 0.44);
+    add(new THREE.CylinderGeometry(0.04, 0.04, 0.5, 6), dark, 0, 2.45, 0);
+    add(new THREE.SphereGeometry(0.1, 10, 8), new THREE.MeshStandardMaterial({ color: 0xff8a3d, emissive: 0xff8a3d, emissiveIntensity: 1.6 }), 0, 2.74, 0);
+    add(new THREE.BoxGeometry(0.22, 0.62, 0.26), dark, -0.72, 1.0, 0);
+    add(new THREE.BoxGeometry(0.22, 0.62, 0.26), dark, 0.72, 1.0, 0);
+    var ring = new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.06, 8, 32), new THREE.MeshBasicMaterial({ color: 0xff7ac8 })); ring.rotation.x = Math.PI / 2; ring.position.y = 0.16; robotBody.add(ring);
+  })();
+  var robotShadow = new THREE.Mesh(new THREE.CircleGeometry(0.8, 20), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: .28 }));
+  robotShadow.rotation.x = -Math.PI / 2; robotShadow.position.y = TOP + 0.02; scene.add(robotShadow);
+  robot.position.set(-5, TOP + 0.55, 0); robot.scale.setScalar(1.15); scene.add(robot);
+  var vel = new V3(), faceAng = 0;
+
+  // ---------- kotak tugas ----------
+  var crates = [];
+  function makeCrate(t) {
+    var g = new THREE.Group();
+    var mat = new THREE.MeshStandardMaterial({ color: TCOL[t], roughness: .45, emissive: TCOL[t], emissiveIntensity: .14 });
+    var body = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mat); body.castShadow = true; body.receiveShadow = true; g.add(body);
+    body.add(new THREE.LineSegments(new THREE.EdgesGeometry(body.geometry), new THREE.LineBasicMaterial({ color: 0xffffff })));
+    var prog = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: .38 })); prog.visible = false; g.add(prog);
+    var sp = makeSprite(3.2, 1.0); g.add(sp);
+    g.userData = { t: t, body: body, prog: prog, sp: sp, mat: mat, tp: new V3(), ts: new V3(2.2, 1.1, 1.7), p: 0 };
+    g.position.set(TRAY_X, TOP + 0.8, TRAY_Z[t]); body.scale.copy(g.userData.ts);
+    scene.add(g); crates.push(g); return g;
+  }
+  for (var i = 0; i < 3; i++) makeCrate(i);
+
+  // ---------- logika jadwal ----------
+  function load(v) { var s = 0; G.order[v].forEach(function (t) { s += ET[t][v]; }); return s; }
+  function placed() { return G.assign.filter(function (x) { return x != null; }).length; }
+  function complete() { return placed() === 3 && G.held == null; }
+  function unplace(t) { var v = G.assign[t]; if (v != null) { G.order[v].splice(G.order[v].indexOf(t), 1); G.assign[t] = null; } }
+  function place(t, v) { unplace(t); G.order[v].push(t); G.assign[t] = v; }
+  function metrics() {
+    var l0 = load(0), l1 = load(1), M = Math.max(l0, l1), avg = (l0 + l1) / 2;
+    return { l: [l0, l1], M: M, doi: avg > 0 ? (M - Math.min(l0, l1)) / avg : 0, util: M > 0 ? (l0 + l1) / (2 * M) : 0 };
+  }
+  function setStat(id, txt) { var e = $(id); if (e.textContent !== txt) { e.textContent = txt; e.style.transform = 'scale(1.15)'; setTimeout(function () { e.style.transform = ''; }, 200); } }
+
+  function retarget() {
+    var m = metrics(), done = complete();
+    for (var v = 0; v < 2; v++) {
+      var x = 0;
+      G.order[v].forEach(function (t) { G.start[t] = x; G.dur[t] = ET[t][v]; x += ET[t][v]; });
+    }
+    crates.forEach(function (c) {
+      var u = c.userData, t = u.t, v = G.assign[t];
+      if (G.held === t) {
+        u.ts.set(1.1, 1.1, 1.1); setLabel(u.sp, [NAMES[t]], '#ffffff');
+      } else if (v == null) {
+        u.tp.set(TRAY_X, TOP + 0.8, TRAY_Z[t]); u.ts.set(2.2, 1.1, 1.7);
+        setLabel(u.sp, [NAMES[t] + ' · ' + LEVEL[t], 'VM1 ' + ET[t][0] + ' s · VM2 ' + ET[t][1] + ' s'], '#' + TCOL[t].toString(16));
+      } else {
+        u.tp.set(LANE_X0 + G.start[t] + G.dur[t] / 2, TOP + 0.12 + 0.5 + 0.03, LANE_Z[v]); u.ts.set(G.dur[t], 1, 1.7);
+        setLabel(u.sp, [NAMES[t] + ' · ' + G.dur[t] + ' s'], VMCOL[v]);
+      }
+      u.sp.position.y = u.ts.y / 2 + 0.95;
+    });
+    for (var w = 0; w < 2; w++) {
+      setLabel(laneSign[w], ['VM' + (w + 1), 'beban ' + m.l[w] + ' s'], VMCOL[w]);
+      var idle = m.M - m.l[w];
+      var show = done && m.M > 0 && idle > 0;
+      idleMesh[w].visible = show; idleSprite[w].visible = show;
+      if (show) {
+        idleMesh[w].scale.x = idle; idleMesh[w].position.set(LANE_X0 + m.l[w] + idle / 2, TOP + 0.2, LANE_Z[w]);
+        idleSprite[w].position.set(LANE_X0 + m.l[w] + idle / 2, 1.3, LANE_Z[w]); setLabel(idleSprite[w], ['menganggur ' + idle + ' s'], '#94a3b8');
+      }
+    }
+    var showM = m.M > 0 && (done || G.held == null);
+    markMesh.visible = showM; markSprite.visible = showM;
+    if (showM) {
+      markMesh.position.set(LANE_X0 + m.M, TOP + 1.3, 0); markSprite.position.set(LANE_X0 + m.M, 3.9, 0);
+      setLabel(markSprite, ['Makespan', m.M + ' s'], '#e11d48');
+    }
+    setStat('sV0', m.l[0] + ' s'); setStat('sV1', m.l[1] + ' s');
+    setStat('sM', m.M > 0 ? m.M + ' s' : '–');
+    setStat('sD', m.M > 0 ? f2(m.doi) : '–'); setStat('sU', m.M > 0 ? Math.round(m.util * 100) + '%' : '–');
+    var ch = '<span>[</span>';
+    for (var c2 = 0; c2 < 3; c2++) { var vv = G.assign[c2]; ch += '<span class="gene" style="background:' + (vv == null ? '#94a3b8' : VMCOL[vv]) + '">' + NAMES[c2] + '→' + (vv == null ? '?' : 'VM' + (vv + 1)) + '</span>'; }
+    $('chromo').innerHTML = ch + '<span>]</span>';
+    $('bRun').disabled = !(done && !G.busy);
+    padRun.spr.visible = true;
+    setLabel(padRun.spr, ['▶ RUN', done ? 'jalankan jadwal' : 'jadwalkan 3 tugas dulu'], '#22c55e');
+    G.focusKey = ''; hintAuto();
+  }
+  function clearRun() {
+    playhead.visible = false; $('result').style.display = 'none';
+    crates.forEach(function (c) { c.userData.prog.visible = false; c.userData.p = 0; c.userData.mat.emissiveIntensity = .14; });
+  }
+
+  // ---------- teks petunjuk ----------
+  function setHint(txt, watch) { var h = $('hint'); h.textContent = txt; h.className = watch ? 'watch' : ''; }
+  function standPos(t) {
+    var u = crates[t].userData, v = G.assign[t];
+    if (v == null) return { x: TRAY_X + 3.2, z: TRAY_Z[t] };
+    return { x: u.tp.x, z: LANE_Z[v] * 1.88 };
+  }
+  function crateDist(c) {
+    var u = c.userData, dx = Math.max(0, Math.abs(robot.position.x - u.tp.x) - u.ts.x / 2), dz = Math.max(0, Math.abs(robot.position.z - u.tp.z) - u.ts.z / 2);
+    return Math.hypot(dx, dz);
+  }
+  function nearestLane() {
+    var z = robot.position.z, x = robot.position.x, v = Math.abs(z - LANE_Z[0]) <= Math.abs(z - LANE_Z[1]) ? 0 : 1;
+    if (Math.abs(z - LANE_Z[v]) <= 3.6 && x >= LANE_X0 - 1 && x <= LANE_X0 + SCALE + 1.5) return v;
+    return -1;
+  }
+  function focusInfo() {
+    if (G.held != null) {
+      var v = nearestLane();
+      if (v >= 0) return { type: 'lane', v: v, key: 'lane' + v };
+      if (robot.position.x < -5.5) return { type: 'tray', key: 'tray' };
+      return { type: 'none', key: 'holding' };
+    }
+    var best = null, bd = 2.9, p;
+    pads.forEach(function (pd, i) { var d = Math.hypot(robot.position.x - pd.x, robot.position.z - pd.z); if (d < 2.6 && d < bd) { bd = d; best = { type: 'pad', pad: pd, key: 'pad' + i }; } });
+    if (best) return best;
+    crates.forEach(function (c) { var d = crateDist(c); if (d < bd) { bd = d; best = { type: 'crate', t: c.userData.t, key: 'crate' + c.userData.t + G.assign[c.userData.t] }; } });
+    return best || { type: 'none', key: 'free' };
+  }
+  function hintAuto() {
+    if (G.auto || G.busy) return;
+    var f = focusInfo(); G.focus = f; G.focusKey = f.key;
+    var t = G.held;
+    if (t != null) {
+      if (f.type === 'lane') setHint('E: taruh ' + NAMES[t] + ' di VM' + (f.v + 1) + ' (+' + ET[t][f.v] + ' s → ' + (load(f.v) + ET[t][f.v]) + ' s)');
+      else if (f.type === 'tray') setHint('E: kembalikan ' + NAMES[t] + ' ke antrean');
+      else setHint('Bawa ' + NAMES[t] + ' ke jalur VM1 atau VM2 (kotak ungu/oranye), lalu tekan E.');
+    } else if (f.type === 'pad') setHint('E: ' + f.pad.hint);
+    else if (f.type === 'crate') setHint('E: ambil ' + NAMES[f.t] + (G.assign[f.t] != null ? ' dari VM' + (G.assign[f.t] + 1) : ''));
+    else if (complete()) setHint('Semua tugas terjadwal! Pergi ke pad hijau ▶ RUN (kanan) lalu tekan E, atau klik tombol Jalankan.');
+    else setHint(placed() === 0 ? 'Langkah 1: dekati sebuah kotak tugas di antrean (kiri), lalu tekan E untuk mengambilnya.' : 'Bagus. Ambil tugas berikutnya (' + (3 - placed()) + ' tersisa).');
+  }
+
+  // ---------- aksi pemain ----------
+  function pick(t) { unplace(t); G.held = t; clearRun(); retarget(); sfx('pick'); }
+  function dropLane(v) { place(G.held, v); G.held = null; clearRun(); retarget(); sfx('drop'); }
+  function dropTray() { G.held = null; clearRun(); retarget(); sfx('drop'); }
+  function interact() {
+    if (G.busy || G.auto) return;
+    var f = focusInfo();
+    if (G.held != null) {
+      if (f.type === 'lane') dropLane(f.v); else if (f.type === 'tray') dropTray();
+      else setHint('Dekati jalur VM1/VM2 atau antrean dulu.');
+    } else if (f.type === 'pad') f.pad.action();
+    else if (f.type === 'crate') pick(f.t);
+  }
+  function resetState() {
+    G.assign = [null, null, null]; G.order = [[], []]; G.held = null;
+    $('phase').style.display = 'none'; clearAnts(); clearRun();
+  }
+  function doReset() {
+    G.token++; G.busy = false; G.auto = false; G.autoTarget = null; G.run = null;
+    resetState(); robot.position.set(-5, TOP + 0.55, 0); retarget();
+  }
+
+  // ---------- eksekusi ----------
+  function runExec(tok) {
+    return new Promise(function (resolve) {
+      var m = metrics(); if (!m.M) { resolve(false); return; }
+      clearRun(); playhead.visible = true; sfx('start');
+      G.run = { t: 0, M: m.M, tok: tok, resolve: resolve };
+      crates.forEach(function (c) { c.userData.prog.visible = true; });
+    });
+  }
+  function updateRun(dt) {
+    var r = G.run; if (!r) return;
+    if (r.tok !== G.token) { playhead.visible = false; G.run = null; r.resolve(false); return; }
+    r.t = Math.min(r.M, r.t + Math.min(0.3, G.rawDt || dt) * 3);
+    playhead.position.set(LANE_X0 + r.t, TOP + 1.5, 0);
+    crates.forEach(function (c) {
+      var u = c.userData, t = u.t; if (G.assign[t] == null) return;
+      var p = Math.max(0, Math.min(1, (r.t - G.start[t]) / G.dur[t])); u.p = p;
+      u.prog.scale.set(Math.max(0.001, u.ts.x * p), 1.04, 1.74);
+      u.prog.position.set(-u.ts.x / 2 + u.ts.x * p / 2, 0, 0);
+      u.mat.emissiveIntensity = (p > 0 && p < 1) ? 0.5 + 0.3 * Math.sin(time * 14) : (p >= 1 ? 0.35 : .14);
+    });
+    if (r.t >= r.M) { G.run = null; r.resolve(true); }
+  }
+  var RES = {
+    '1,1,0': ['Sempurna: optimal dan seimbang', 'Makespan 8 s dengan beban 8 s vs 7 s (DoI 0,13). Inilah jadwal akhir Hybrid Max-Min + ACO: T1 dan T2 lebih cepat di VM2, sedangkan T3 yang berat cukup ditaruh di VM1.'],
+    '0,0,1': ['Optimal, tetapi beban kurang rata', 'Makespan 8 s, namun VM1 memikul 8 s dan VM2 hanya 5 s (DoI 0,46). Ini jadwal awal Max-Min sekaligus hasil akhir Hybrid Min-Min + GA pada contoh ini.'],
+    '0,1,1': ['Makespan optimal, tetapi VM1 nyaris menganggur', 'Ini jadwal Min-Min murni (Kromosom_0 pada GA): VM1 hanya bekerja 2 s dan menganggur 6 s (DoI 1,20). Metaheuristik dipakai untuk memperbaiki penumpukan seperti ini.'],
+    '1,0,1': ['Hampir: makespan 9 s', 'T1 di VM2 butuh 4 s, padahal di VM1 hanya 2 s. Memakai matriks ET sebagai heuristik (η = 1/ET) membantu semut menghindari pilihan seperti ini.'],
+    '0,1,0': ['Makespan 10 s: VM1 menumpuk', 'T3 dan T1 sama-sama di VM1 (8 + 2 s), padahal T3 hanya 5 s bila ditaruh di VM2.']
+  };
+  function showResult() {
+    var m = metrics(), key = G.assign.join(',');
+    var r = m.M <= 8 ? (m.doi < 0.2 ? 3 : 2) : (m.M <= 10 ? 1 : 0);
+    var txt = RES[key] || ['Beban menumpuk di satu VM', 'Satu VM memikul hampir semua pekerjaan sementara VM lain menganggur. Inilah ketimpangan beban yang dilawan algoritma hybrid.'];
+    var st = ''; for (var k = 0; k < 3; k++) st += '<span class="star' + (k < r ? ' on' : '') + '" style="--d:' + (k * .25) + 's">★</span>';
+    $('stars').innerHTML = st; $('rTitle').textContent = txt[0] + ' (makespan ' + m.M + ' s, DoI ' + f2(m.doi) + ')'; $('rMsg').textContent = txt[1];
+    $('result').style.display = 'block';
+    sfx('win', r);
+    if (r >= 2) confetti(r === 3 ? 90 : 40);
+  }
+  async function startRun() {
+    if (!complete() || G.busy) return;
+    var tok = ++G.token; G.busy = true; $('bRun').disabled = true;
+    setHint('Eksekusi berjalan: kedua VM bekerja paralel, garis putih adalah waktu.', true);
+    var ok = await runExec(tok);
+    if (tok !== G.token) return;
+    G.busy = false; $('bRun').disabled = !complete();
+    if (ok) showResult(); hintAuto();
+  }
+
+  // ---------- konfeti & semut ----------
+  var confs = [], confGeo = new THREE.BoxGeometry(0.22, 0.22, 0.22), confMats = [0xff5f8f, 0xffd166, 0x38bdf8, 0x34d399, 0xa78bfa].map(function (c) { return new THREE.MeshBasicMaterial({ color: c }); });
+  function confetti(n) {
+    for (var i = 0; i < n; i++) {
+      var m = new THREE.Mesh(confGeo, confMats[i % 5]); m.position.set(LANE_X0 + 8 + (Math.random() - .5) * 6, 3, (Math.random() - .5) * 4); scene.add(m);
+      confs.push({ m: m, v: new V3((Math.random() - .5) * 9, 8 + Math.random() * 7, (Math.random() - .5) * 8), life: 3 });
+    }
+  }
+  var ants = [];
+  function spawnAnts() {
+    var mat = new THREE.MeshStandardMaterial({ color: 0x4a1d12, roughness: .6 });
+    for (var i = 0; i < 14; i++) {
+      var g = new THREE.Group();
+      [[0, 0, 0, .22], [0.28, 0, 0, .17], [-0.3, 0, 0, .27]].forEach(function (b) { var s = new THREE.Mesh(new THREE.SphereGeometry(b[3], 8, 6), mat); s.position.set(b[0], 0, b[2]); s.castShadow = true; g.add(s); });
+      g.scale.setScalar(1.3); scene.add(g); ants.push({ g: g, ph: Math.random() * 6.28, sp: 0.8 + Math.random() * 0.9, lane: i % 2, off: (Math.random() - .5) * 1.4 });
+    }
+  }
+  function clearAnts() { ants.forEach(function (a) { scene.remove(a.g); }); ants = []; }
+
+  // ---------- mode tonton ----------
+  async function goTo(tok, x, z) {
+    G.autoTarget = { x: x, z: z };
+    while (G.autoTarget && Math.hypot(robot.position.x - x, robot.position.z - z) > 0.18) { await nextFrame(); if (tok !== G.token) return false; }
+    G.autoTarget = null; return tok === G.token;
+  }
+  async function carry(tok, t, v, caption) {
+    if (caption) setHint(caption, true);
+    await sleep(600); if (tok !== G.token) return false;
+    var sp = standPos(t); if (!await goTo(tok, sp.x, sp.z)) return false;
+    pick(t); await sleep(550); if (tok !== G.token) return false;
+    var x = LANE_X0 + load(v) + ET[t][v] / 2; if (!await goTo(tok, x, LANE_Z[v] * 1.88)) return false;
+    dropLane(v); await sleep(1100); return tok === G.token;
+  }
+  async function antPhase(tok) {
+    var ph = $('phase'); ph.style.display = 'block'; spawnAnts();
+    for (var i = 1; i <= 25; i++) {
+      ph.innerHTML = '🐜 Siklus ' + Math.round(i * 2) + '/50 · 25 semut · makespan terbaik 8 s<div class="row">P(ij) ∝ τ^α · η^β, η = 1/ET, evaporasi ρ = 0,2, Q = 100</div>';
+      await sleep(110); if (tok !== G.token) return false;
+    }
+    ph.style.display = 'none'; clearAnts(); return true;
+  }
+  function genes(list) { return list.map(function (g) { return g === '|' ? '<b>│</b>' : '<span class="gene" style="background:' + (g === 'VM1' ? VMCOL[0] : VMCOL[1]) + '">' + g + '</span>'; }).join(' '); }
+  async function gaPhase(tok) {
+    var ph = $('phase'); ph.style.display = 'block';
+    for (var i = 1; i <= 25; i++) {
+      ph.innerHTML = '🧬 Evolusi GA · generasi ' + Math.round(i * 2) + '/50 · populasi 30' +
+        '<div class="row">Induk A (Kromosom_0, elit Min-Min): ' + genes(['VM1', '|', 'VM2', 'VM2']) + '</div>' +
+        '<div class="row">Induk B (acak, turnamen k = 3): ' + genes(['VM2', '|', 'VM1', 'VM2']) + '</div>' +
+        (i >= 10 ? '<div class="row">Anak (crossover titik tunggal, Pc = 0,8): ' + genes(['VM1', 'VM1', 'VM2']) + '</div>' : '');
+      await sleep(110); if (tok !== G.token) return false;
+    }
+    await sleep(500); ph.style.display = 'none'; return tok === G.token;
+  }
+  async function watch(algo) {
+    var tok = ++G.token; G.run = null; G.autoTarget = null; resetState(); G.busy = true; G.auto = true; retarget(); $('bRun').disabled = true;
+    try {
+      if (algo === 'aco') {
+        setHint('Level yang sama dimainkan Hybrid Max-Min + ACO. Tahap 1: Max-Min memilih tugas dengan waktu selesai minimum terbesar.', true); await sleep(2200); if (tok !== G.token) return;
+        if (!await carry(tok, 2, 1, 'Iterasi 1 Max-Min: CT minimum T1 = 2 s, T2 = 3 s, T3 = 5 s. Yang terbesar (T3) dijadwalkan lebih dulu, ke VM2.')) return;
+        if (!await carry(tok, 1, 0, 'Iterasi 2 Max-Min: Sisa T1 (min di VM1 = 2 s) dan T2 (min di VM1 = 6 s). Nilai terbesar (T2) masuk ke VM1.')) return;
+        if (!await carry(tok, 0, 0, 'Iterasi 3 Max-Min: T1 selesai 8 s di VM1 vs 9 s di VM2, maka T1 ke VM1. Jadwal awal Max-Min: makespan 8 s, DoI 0,46.')) return;
+        setHint('Tahap 2: Jalur hasil Max-Min diberi feromon awal τ = 3,0 (jalur lain 1,0), lalu 25 semut menjelajah.', true);
+        if (!await antPhase(tok)) return;
+        if (!await carry(tok, 2, 0, 'Tahap 3 (Konvergensi ACO): Karena visibilitas η = 1/ET, T3 yang berat dialokasikan ke VM1 (8 s)…')) return;
+        if (!await carry(tok, 0, 1, '…sementara T1 dan T2 dipindahkan ke VM2 (4 + 3 = 7 s).')) return;
+        if (!await carry(tok, 1, 1)) return;
+        setHint('Hasil akhir: Makespan optimal 8 s, DoI turun drastis ke 0,13 (beban 8 s vs 7 s). Menjalankan jadwal...', true);
+      } else {
+        setHint('Level yang sama dimainkan Hybrid Min-Min + GA. Tahap 1: Min-Min memilih pasangan tugas–VM dengan waktu selesai terkecil.', true); await sleep(2200); if (tok !== G.token) return;
+        if (!await carry(tok, 0, 0, 'Iterasi 1 Min-Min: Pasangan CT terkecil adalah T1 di VM1 (2 s).')) return;
+        if (!await carry(tok, 1, 1, 'Iterasi 2 Min-Min: Berikutnya adalah T2 di VM2 (3 s).')) return;
+        if (!await carry(tok, 2, 1, 'Iterasi 3 Min-Min: T3 selesai 8 s di VM2 vs 10 s di VM1, jadi menumpuk di VM2. VM1 hanya bekerja 2 s (DoI 1,20).')) return;
+        setHint('Tahap 2: Jadwal ini disimpan sebagai Kromosom_0 (elit) dalam populasi 30 individu, lalu GA berevolusi.', true);
+        if (!await gaPhase(tok)) return;
+        if (!await carry(tok, 1, 0, 'Tahap 3 (Hasil Evolusi GA): Anak terbaik [VM1, VM1, VM2] memindahkan T2 dari VM2 ke VM1.')) return;
+        setHint('Hasil akhir: Makespan 8 s, DoI turun dari 1,20 menjadi 0,46 (beban 8 s vs 5 s). Menjalankan jadwal...', true);
+      }
+      if (!await goTo(tok, 15.8, 0)) return;
+      await sleep(900); if (tok !== G.token) return;
+      G.auto = false;
+      var ok = await runExec(tok); if (tok !== G.token) return;
+      if (ok) showResult(); G.busy = false; G.auto = false; $('bRun').disabled = !complete();
+      setHint('Selesai. Tekan R untuk mengosongkan jalur, atau coba susun jadwal sendiri.', true);
+    } finally { if (tok === G.token && !G.run) { G.busy = false; G.auto = false; G.autoTarget = null; } }
+  }
+
+  // ---------- musik & efek suara (Web Audio, tanpa berkas audio) ----------
+  var AU = { ctx: null, master: null, music: null, sfxBus: null, noise: null, on: true, started: false, timer: null, step: 0, next: 0 };
+  try { if (localStorage.getItem('dunia3d_music') === 'off') AU.on = false; } catch (e) { }
+  var BPM = 92, SD = 60 / BPM / 4;                       // durasi 1/16 nada
+  var CHORDS = [
+    { root: 110.0, n: [220.0, 261.63, 329.63, 392.0] },   // Am7
+    { root: 87.31, n: [174.61, 220.0, 261.63, 329.63] },  // Fmaj7
+    { root: 130.81, n: [261.63, 329.63, 392.0, 493.88] }, // Cmaj7
+    { root: 98.0, n: [196.0, 246.94, 293.66, 440.0] }     // Gadd9
+  ];
+  var ARP = [0, 2, 1, 3, 2, 1, 3, 2];
+  function updateMusicBtn() { $('bMusic').textContent = AU.on ? '🔊 Musik: nyala' : '🔇 Musik: mati'; }
+  function ensureAudio() {
+    if (!AU.ctx) {
+      var C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+      try { AU.ctx = new C(); } catch (e) { return; }
+      var ctx = AU.ctx, comp = ctx.createDynamicsCompressor();
+      AU.master = ctx.createGain(); AU.master.gain.value = AU.on ? 0.6 : 0; AU.master.connect(comp); comp.connect(ctx.destination);
+      AU.music = ctx.createGain(); AU.music.gain.value = 0.5; AU.music.connect(AU.master);
+      AU.sfxBus = ctx.createGain(); AU.sfxBus.gain.value = 0.9; AU.sfxBus.connect(AU.master);
+      var len = Math.floor(ctx.sampleRate * 0.4), b = ctx.createBuffer(1, len, ctx.sampleRate), d = b.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      AU.noise = b;
+    }
+    if (AU.ctx.state === 'suspended') AU.ctx.resume();
+    if (!AU.started) { AU.started = true; AU.next = AU.ctx.currentTime + 0.15; AU.step = 0; AU.timer = setInterval(schedule, 50); }
+  }
+  function tone(o) {                                       // {f, t, dur, type, vol, att, rel, lp, det, dest}
+    var ctx = AU.ctx, osc = ctx.createOscillator(), g = ctx.createGain(), att = o.att || 0.005, rel = o.rel || 0.2;
+    osc.type = o.type || 'sine'; osc.frequency.value = o.f; if (o.det) osc.detune.value = o.det;
+    g.gain.setValueAtTime(0.0001, o.t); g.gain.linearRampToValueAtTime(o.vol, o.t + att);
+    g.gain.setValueAtTime(o.vol, o.t + Math.max(att, o.dur)); g.gain.exponentialRampToValueAtTime(0.0001, o.t + o.dur + rel);
+    osc.connect(g); var out = g;
+    if (o.lp) { var f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = o.lp; g.connect(f); out = f; }
+    out.connect(o.dest || AU.music); osc.start(o.t); osc.stop(o.t + o.dur + rel + 0.05);
+  }
+  function sweep(f0, f1, t, dur, type, vol, dest) {
+    var ctx = AU.ctx, osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(f0, t); osc.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.05);
+    osc.connect(g); g.connect(dest || AU.music); osc.start(t); osc.stop(t + dur + 0.1);
+  }
+  function noiseHit(t, dur, vol, hp, dest) {
+    var ctx = AU.ctx, src = ctx.createBufferSource(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+    src.buffer = AU.noise; f.type = 'highpass'; f.frequency.value = hp;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(f); f.connect(g); g.connect(dest || AU.music); src.start(t); src.stop(t + dur + 0.02);
+  }
+  function playStep(step, t) {
+    var bar = Math.floor(step / 16) % 4, s16 = step % 16, ch = CHORDS[bar];
+    if (s16 === 0) ch.n.forEach(function (f, i) {            // pad: dua osilator sedikit sumbang
+      tone({ f: f, t: t, dur: SD * 15, type: 'triangle', vol: 0.05, att: 0.6, rel: 0.9, lp: 1400, det: -7 });
+      tone({ f: f, t: t, dur: SD * 15, type: 'sine', vol: 0.045, att: 0.6, rel: 0.9, lp: 1400, det: 7 });
+    });
+    if (s16 === 0 || s16 === 6 || s16 === 10) tone({ f: ch.root, t: t, dur: SD * (s16 === 6 ? 3 : 4), type: 'sine', vol: 0.22, att: 0.01, rel: 0.25, lp: 400 });
+    if (s16 % 2 === 0 && Math.random() > 0.18) {              // arpeggio pluk
+      var f = ch.n[ARP[(s16 / 2) % 8]] * 2;
+      tone({ f: f, t: t, dur: 0.06, type: 'triangle', vol: 0.085 + (s16 % 4 === 0 ? 0.02 : 0), att: 0.005, rel: 0.4, lp: 2600 });
+    }
+    if (s16 === 0 || s16 === 10) sweep(120, 42, t, 0.18, 'sine', 0.5);                // kick
+    if (s16 === 4 || s16 === 12) noiseHit(t, 0.14, 0.12, 1800);                       // snare lembut
+    if (s16 % 2 === 0) noiseHit(t, 0.04, s16 % 4 === 0 ? 0.05 : 0.03, 7000);          // hi-hat
+  }
+  function schedule() {
+    var ctx = AU.ctx; if (!ctx || ctx.state !== 'running') return;
+    if (AU.next < ctx.currentTime - 0.4) AU.next = ctx.currentTime + 0.05;
+    while (AU.next < ctx.currentTime + 0.3) { playStep(AU.step, AU.next); AU.next += SD; AU.step = (AU.step + 1) % 64; }
+  }
+  function toggleMusic() {
+    AU.on = !AU.on; try { localStorage.setItem('dunia3d_music', AU.on ? 'on' : 'off'); } catch (e) { }
+    ensureAudio(); if (AU.master) AU.master.gain.setTargetAtTime(AU.on ? 0.6 : 0, AU.ctx.currentTime, 0.08);
+    updateMusicBtn();
+  }
+  function sfx(kind, arg) {
+    if (!AU.ctx || !AU.on || AU.ctx.state !== 'running') return;
+    var t = AU.ctx.currentTime + 0.01, B = AU.sfxBus;
+    if (kind === 'pick') { tone({ f: 523.25, t: t, dur: 0.06, type: 'triangle', vol: 0.3, rel: 0.12, dest: B }); tone({ f: 783.99, t: t + 0.07, dur: 0.08, type: 'triangle', vol: 0.3, rel: 0.2, dest: B }); }
+    else if (kind === 'drop') { sweep(220, 70, t, 0.14, 'sine', 0.55, B); noiseHit(t, 0.08, 0.15, 900, B); tone({ f: 392, t: t + 0.05, dur: 0.07, type: 'triangle', vol: 0.22, rel: 0.2, dest: B }); }
+    else if (kind === 'start') { [392, 523.25, 659.25].forEach(function (f, i) { tone({ f: f, t: t + i * 0.09, dur: 0.1, type: 'square', vol: 0.1, rel: 0.15, lp: 1800, dest: B }); }); }
+    else if (kind === 'win') {
+      var notes = arg >= 2 ? [523.25, 659.25, 783.99, 1046.5, 1318.5] : (arg === 1 ? [392, 493.88, 587.33] : [246.94, 220, 196]);
+      var n = arg === 3 ? 5 : (arg === 2 ? 4 : notes.length);
+      for (var i = 0; i < n; i++) tone({ f: notes[i], t: t + i * 0.13, dur: 0.18, type: arg >= 1 ? 'triangle' : 'sine', vol: 0.3, rel: 0.5, dest: B });
+    }
+  }
+  updateMusicBtn();
+  $('bMusic').addEventListener('click', function () { toggleMusic(); canvas.focus(); });
+  function firstGesture() { if (AU.on) ensureAudio(); }
+  window.addEventListener('pointerdown', firstGesture, { once: false });
+
+  // ---------- input ----------
+  var keys = {};
+  window.addEventListener('keydown', function (e) {
+    var k = e.key.toLowerCase();
+    firstGesture();
+    if (k === 'm' && !e.repeat) { toggleMusic(); return; }
+    if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].indexOf(k) >= 0) e.preventDefault();
+    if (k === 'escape') { closeWorld(); return; }
+    if (e.repeat) { keys[k] = true; return; }
+    keys[k] = true;
+    if (k === 'e' || k === 'enter' || k === ' ') interact();
+    if (k === 'r') doReset();
+  });
+  window.addEventListener('keyup', function (e) { keys[e.key.toLowerCase()] = false; });
+  window.addEventListener('blur', function () { keys = {}; });
+  function closeWorld() { 
+    if (window.parent && window.parent !== window) {
+      try { window.parent.postMessage('close3d', '*'); } catch (e) {}
+    } else if (history.length > 1 && document.referrer) {
+      history.back();
+    } else {
+      window.location.href = 'index.html';
+    }
+  }
+  $('close').addEventListener('click', closeWorld);
+  $('bRun').addEventListener('click', function () { startRun(); canvas.focus(); });
+  $('bReset').addEventListener('click', function () { doReset(); canvas.focus(); });
+  $('bAco').addEventListener('click', function () { watch('aco'); canvas.focus(); });
+  $('bGa').addEventListener('click', function () { watch('ga'); canvas.focus(); });
+  $('rAgain').addEventListener('click', function () { doReset(); });
+  $('rHide').addEventListener('click', function () { $('result').style.display = 'none'; });
+  canvas.addEventListener('pointerdown', function () { canvas.focus(); });
+
+  // ---------- loop ----------
+  var time = 0, last = performance.now(), focusPos = new V3(-3, 0, 0), offCur = new V3(0, 16, 12);
+  function resize() {
+    var w = window.innerWidth, h = window.innerHeight; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resize); resize();
+  function update(dt) {
+    time += dt;
+    // gerak robot
+    var tx = 0, tz = 0, speed = 7;
+    if (G.auto && G.autoTarget) {
+      var dx = G.autoTarget.x - robot.position.x, dz = G.autoTarget.z - robot.position.z, d = Math.hypot(dx, dz);
+      if (d > 0.05) { tx = dx / d; tz = dz / d; speed = Math.min(12, 3 + d * 3); }
+    } else if (!G.auto) {
+      if (keys['w'] || keys['arrowup']) tz -= 1; if (keys['s'] || keys['arrowdown']) tz += 1;
+      if (keys['a'] || keys['arrowleft']) tx -= 1; if (keys['d'] || keys['arrowright']) tx += 1;
+      var n = Math.hypot(tx, tz); if (n > 0) { tx /= n; tz /= n; }
+    }
+    var kk = 1 - Math.exp(-dt * 10);
+    vel.x += (tx * speed - vel.x) * kk; vel.z += (tz * speed - vel.z) * kk;
+    robot.position.x = Math.max(-12, Math.min(20, robot.position.x + vel.x * dt));
+    robot.position.z = Math.max(-9.7, Math.min(10.2, robot.position.z + vel.z * dt));
+    if (Math.hypot(vel.x, vel.z) > 0.4) {
+      var target = Math.atan2(vel.x, vel.z), df = ((target - faceAng + Math.PI * 3) % (Math.PI * 2)) - Math.PI; faceAng += df * (1 - Math.exp(-dt * 12));
+    }
+    if (G.auto && !G.autoTarget && G.busy && ants.length) faceAng += dt * 2.5;     // robot "menari" saat fase semut/GA
+    robot.rotation.y = faceAng;
+    robot.position.y = TOP + 0.55 + Math.sin(time * 3) * 0.1;
+    robotBody.rotation.z = -vel.x * 0.02; robotBody.rotation.x = vel.z * 0.02;
+    robotShadow.position.set(robot.position.x, TOP + 0.02, robot.position.z);
+    // kotak
+    var ck = 1 - Math.exp(-dt * 9);
+    crates.forEach(function (c) {
+      var u = c.userData;
+      if (G.held === u.t) u.tp.set(robot.position.x, robot.position.y + 2.65, robot.position.z);
+      c.position.lerp(u.tp, ck); u.body.scale.lerp(u.ts, ck);
+      u.prog.scale.y = 1.04;
+    });
+    updateRun(dt);
+    // pad
+    pads.forEach(function (p) {
+      var near = !G.busy && Math.hypot(robot.position.x - p.x, robot.position.z - p.z) < 2.6;
+      p.ring.emissiveIntensity = near ? 1.8 + Math.sin(time * 8) * .6 : .7 + Math.sin(time * 2 + p.x) * .15;
+      p.spr.position.y = 3.1 + Math.sin(time * 2 + p.x) * .12;
+    });
+    // semut
+    ants.forEach(function (a) {
+      var x = LANE_X0 + 8 + Math.sin(time * a.sp + a.ph) * 7.6, dxv = Math.cos(time * a.sp + a.ph);
+      a.g.position.set(x, TOP + 1.65 + Math.abs(Math.sin(time * 9 + a.ph)) * 0.12, LANE_Z[a.lane] + a.off); a.g.rotation.y = dxv >= 0 ? Math.PI / 2 : -Math.PI / 2;
+    });
+    // konfeti
+    for (var i = confs.length - 1; i >= 0; i--) {
+      var c = confs[i]; c.v.y -= 16 * dt; c.m.position.addScaledVector(c.v, dt); c.m.rotation.x += dt * 6; c.m.rotation.y += dt * 4; c.life -= dt;
+      if (c.life <= 0 || c.m.position.y < 0) { scene.remove(c.m); confs.splice(i, 1); }
+    }
+    // kamera
+    var overview = G.busy;
+    var want = overview ? new V3(5, 0, 1) : new V3(robot.position.x, 0, robot.position.z);
+    focusPos.lerp(want, 1 - Math.exp(-dt * 2.6));
+    var dist = overview ? 27 : 18; if (cam.aspect < 1.3) dist *= 1.35;
+    var offW = new V3(0, dist * 0.78, dist * 0.62); offCur.lerp(offW, 1 - Math.exp(-dt * 2.6));
+    cam.position.copy(focusPos).add(offCur); cam.lookAt(focusPos.x, 0.5, focusPos.z);
+    // petunjuk saat fokus berubah
+    if (!G.busy && !G.auto) { var f = focusInfo(); if (f.key !== G.focusKey) hintAuto(); }
+  }
+  function frame(now) {
+    var dt = Math.min(0.05, (now - last) / 1000); G.rawDt = (now - last) / 1000; last = now;
+    update(dt); renderer.render(scene, cam); requestAnimationFrame(frame);
+  }
+  retarget();
+  crates.forEach(function (c) { c.position.copy(c.userData.tp); c.userData.body.scale.copy(c.userData.ts); });
+  focusPos.set(-3, 0, 0); requestAnimationFrame(frame);
+  window.__world = { AU: AU, G: G, robot: robot, interact: interact, pick: pick, dropLane: dropLane, doReset: doReset, startRun: startRun, watch: watch, keys: keys, metrics: metrics };
+  canvas.focus();
+})();
+</script>
+</body>
+</html>
