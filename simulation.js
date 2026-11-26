@@ -17,6 +17,7 @@ playback.mode='guided';
 function cancelAnimations(){animations.forEach(a=>a.cancel());animations=[];}
 function stopExecution(){cancelAnimationFrame(executionFrame);executionFrame=null;$('execute').textContent='Jalankan eksekusi';}
 export function pauseLab(){playback.pause();cancelAnimations();stopExecution();if(results&&!document.body.classList.contains('busy'))render();}
+export function labSnapshot(){return structuredClone({scenario,parameters});}
 function navigate(index){preview=null;elapsed=null;stopExecution();playback.seek(index);}
 function phase(direction){
   if(!results||algorithm==='compare')return;
@@ -252,6 +253,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseLab();
 reduced.addEventListener('change',()=>cancelAnimations());
 document.addEventListener('lab:motion',cancelAnimations);
 document.addEventListener('keydown',e=>{
+  if(document.querySelector('.cloud-ops-dialog[open]'))return;
   if($('slide-4').hidden||$('config-dialog').open||e.target.closest('input,select,textarea,button,a,summary,[contenteditable]'))return;
   if(e.code==='Space'&&algorithm!=='compare'){e.preventDefault();$('play').click();}
   if(e.key==='[')phase(-1);if(e.key===']')phase(1);

@@ -82,3 +82,6 @@ body.presentation .guided-mode .inspector{max-height:290px}
 }
 @media(max-width:560px){.inspector select,#editors input,#editors select{min-height:44px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.concept-route{stroke-dasharray:none}}
+.cloud-ops-dialog{position:fixed;inset:0;margin:0;padding:0;border:0;width:100vw;max-width:none;height:100dvh;max-height:none;background:#1c0a3b;overflow:hidden}
+.cloud-ops-dialog iframe{display:block;width:100%;height:100%;border:0}
+.cloud-ops-return{position:absolute;z-index:1;right:16px;top:14px}

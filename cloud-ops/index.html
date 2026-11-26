@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cloud Ops 3D — Jadilah Scheduler</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="game.css">
+  <script type="module" src="game.js?v=cloud-6"></script>
+</head>
+<body>
+  <header>
+    <div><h1>Cloud Ops 3D <span>Jadilah Scheduler</span></h1><p id="scenario-name">Skenario latihan: 3 task, 2 VM</p></div>
+    <nav aria-label="Pengaturan dunia"><button id="audio" aria-pressed="false">Audio: mati</button><button id="return">Kembali ke presentasi</button></nav>
+  </header>
+  <nav class="modebar" aria-label="Mode permainan">
+    <div class="modes"><button data-mode="manual" aria-pressed="true">Main sendiri</button><button data-mode="aco" aria-pressed="false">Tonton Max-Min + ACO</button><button data-mode="ga" aria-pressed="false">Tonton Min-Min + GA</button></div>
+    <div><button id="run" class="primary" disabled>Jalankan</button><button id="reset">Reset</button></div>
+  </nav>
+  <main>
+    <section class="world" aria-label="Pulau penjadwalan">
+      <canvas id="world" tabindex="0" aria-label="Dunia 3D. WASD atau tombol arah untuk bergerak, E untuk mengambil dan menaruh task. Klik kotak atau jalur untuk mendekat."></canvas>
+      <div id="loading" role="status">Memuat dunia 3D dan menghitung kedua hybrid…</div>
+      <div id="fallback" role="alert" hidden><h2>Dunia 3D tidak dapat ditampilkan</h2><p id="failure"></p><a href="../#4">Buka laboratorium 2D</a></div>
+      <div id="scene-caption">Antrean task di kiri · jalur VM di kanan · panjang kotak = waktu eksekusi</div>
+    </section>
+    <aside aria-label="Jadwal dan penjelasan">
+      <div class="metrics"><div><span>Makespan estimasi</span><strong id="makespan">0 s</strong></div><div><span>DoI</span><strong id="doi">0</strong></div><div><span>Utilisasi</span><strong id="utilization">0%</strong></div></div>
+      <div id="loads"></div>
+      <p id="assignment-count">0 / 3 task dijadwalkan</p>
+      <section class="lesson"><h2 id="phase-title">Susun jadwal Anda</h2><p id="explanation">Pilih VM untuk setiap task. Waktu robot berjalan tidak masuk makespan.</p><div id="operation"></div></section>
+      <div id="demo-controls" hidden><div class="playback"><button id="play">Putar</button><button id="next">Berikutnya</button></div><button id="skip">Lewati ke hasil</button><p id="step-count"></p></div>
+      <details id="details"><summary>Rincian skenario & algoritma</summary>
+        <label for="scenario">Sumber skenario</label><select id="scenario"><option value="training">Latihan: 3 task, 2 VM</option><option value="lab">Gunakan skenario dari laboratorium</option></select><p id="import-note"></p>
+        <label for="camera">Kamera</label><select id="camera"><option value="overview">Seluruh pulau</option><option value="follow">Ikuti robot</option></select>
+        <label for="speed">Kecepatan demonstrasi</label><select id="speed"><option value="1">Normal</option><option value="3" selected>Percepat 3×</option><option value="8">Ringkas 8×</option></select>
+        <label class="check"><input id="reduce" type="checkbox"> Kurangi gerak</label>
+        <div id="parameters"></div><div id="etc"></div><div id="trace-details"></div>
+        <details><summary>Dekati task atau VM dengan keyboard</summary><p>Alternatif WASD: pilih tujuan, klik Dekati, lalu tekan E di dunia.</p><label for="destination">Tujuan robot</label><select id="destination"></select><button id="approach">Dekati</button></details>
+        <p class="fine">Dunia dan robot: kontribusi asli rekan Kelompok 8. Integrasi memakai engine laboratorium yang sama. Optimizer hanya meminimalkan makespan; DoI dan utilisasi merupakan metrik evaluasi.</p>
+      </details>
+    </aside>
+  </main>
+  <footer><p id="hint" aria-live="polite">Dekati T1 dan tekan E untuk mengambilnya.</p><p class="keys">WASD / ↑↓←→ gerak · E / Spasi interaksi · R reset · M audio · Esc kembali · Klik kotak/jalur untuk mendekat</p></footer>
+  <dialog id="results" aria-labelledby="result-title"><button id="close-result" class="dialog-close">Lanjut lihat dunia</button><div id="stars" aria-label="Penilaian permainan"></div><h2 id="result-title">Hasil jadwal</h2><p id="result-message"></p><div class="table-wrap"><table><caption>Perhitungan pada ETC, seed, dan parameter yang sama</caption><thead><tr><th>Jadwal</th><th>Makespan (s)</th><th>DoI</th><th>Utilisasi (%)</th></tr></thead><tbody id="result-rows"></tbody></table></div><p id="proof"></p><p class="fine">Bintang menilai makespan relatif terhadap optimum terbukti bila tersedia, atau pembanding terbaik: 3 = sama atau lebih baik, 2 = ≤ 1,25×, 1 = ≤ 1,5×. DoI tidak menentukan pemenang optimizer.</p><button id="again">Main lagi</button></dialog>
+  <noscript>Aktifkan JavaScript untuk bermain. <a href="../#4">Kembali ke laboratorium</a>.</noscript>
+</body>
+</html>

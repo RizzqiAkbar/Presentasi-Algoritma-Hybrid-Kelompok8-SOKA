@@ -1,6 +1,7 @@
-import { pauseLab } from './simulation.js?v=guided-2';
+import { pauseLab } from './simulation.js?v=cloud-1';
 import { initBenchmark } from './ui/benchmark.js';
 import { initWalkthrough } from './ui/walkthrough.js?v=guided-2';
+import './ui/cloud-ops.js?v=cloud-2';
 
 let current=1;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -27,6 +28,7 @@ async function presentation(){
 document.getElementById('present').onclick=presentation;
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement){document.body.classList.remove('presentation');document.getElementById('present').textContent='Layar penuh';}});
 document.addEventListener('keydown',event=>{
+  if(document.querySelector('.cloud-ops-dialog[open]'))return;
   if(event.key==='Escape'&&!document.getElementById('config-dialog').open){document.body.classList.remove('presentation');document.getElementById('present').textContent='Layar penuh';return;}
   if(document.getElementById('config-dialog').open||event.target.closest('input,select,textarea,button,a,summary,[contenteditable]'))return;
   if(event.key==='ArrowRight'){event.preventDefault();goTo(current+1);}if(event.key==='ArrowLeft'){event.preventDefault();goTo(current-1);}

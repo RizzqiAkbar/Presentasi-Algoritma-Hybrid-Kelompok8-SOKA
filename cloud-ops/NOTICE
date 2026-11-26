@@ -1,0 +1,25 @@
+Cloud Ops 3D
+
+The island, robot, task crates, execution lanes, action pads, ant and reward motifs,
+and procedural music were adapted from the user's teammate's contribution:
+"Cloud Ops 3D: Jadilah Scheduler", supplied as dunia3d (1).html.
+No individual author name was supplied. Credit remains with the teammate and
+Kelompok 8 SOKA. The original supplied file is retained locally in the ignored
+work/cloud-ops-before/original.html backup; it is not used as runtime code.
+
+The integrated controller and 3D adapter consume the existing scheduling engine.
+Original scripted schedules, comparison tables and optimization claims were
+replaced with calculated mappings, metrics and actual event traces.
+
+Three.js 0.152.2 (MIT)
+Copyright 2010-2023 three.js authors. Full license: vendor/LICENSE.
+Official source tag: https://github.com/mrdoob/three.js/tree/r152
+Package: https://registry.npmjs.org/three/-/three-0.152.2.tgz
+The tarball SHA-512 was verified against the npm registry dist.integrity value.
+Tarball SHA-512:
+15ff7322949f924a9c05ca5d885a367f7e6f03d66e70ef8df1335a7093aa68413a0eb0747ae7c8b553226fc6caf0f723bbf64d4fa6bb6e51351a14e991db082f
+vendor/three.module.js SHA-256:
+4d01ed1c468372b16732fcecfeb2f463ac1b29b0fc296b2d64ec084e32876b39
+
+Runtime imports use the local vendor file. There is no runtime CDN, font,
+texture, audio, analytics, or other external network dependency.
