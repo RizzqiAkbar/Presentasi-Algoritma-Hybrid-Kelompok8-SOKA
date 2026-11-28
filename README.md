@@ -1,6 +1,64 @@
 # Interactive Cloud Scheduling Lab
 
+## Refinement akademik: literatur dan dua tahap benchmark
+
+Materi Literatur kini memakai format referensi: metadata jurnal, judul lengkap, penulis, cuplikan kutipan dengan halaman dan penjelasan relevansinya. Kutipan diperiksa pada PDF; bibliografi tetap IJAMTES 2018, hlm. 32–42 dan MCGA oleh Shu/Wang, 2009, hlm. 62–63. Penjelasan seeding kelompok dipisahkan dari teks jurnal pada disclosure relevansi.
+
+Baseline tersinkron dengan `main` pada commit `694229d2abbeb78a39c5b848a8f0a41ccc69efd2`, termasuk perubahan rekan pada `dunia3d.html` dan `ui/cloud-ops.js`. Semua file 3D, integrasi, engine dan walkthrough dipertahankan. Bagian fitur di bawah menyimpan dokumentasi integrasi sebelumnya; launcher terbaru membuka `dunia3d.html` milik rekan dan tidak diubah dalam refinement akademik.
+
+Buka <http://localhost:8080/> atau langsung materi 5 di <http://localhost:8080/#5>. Lima materi tetap sama. Materi 5 mempunyai dua tab:
+
+1. **Antar-hybrid:** rekaman asli CloudSim 3.0.3 untuk Max-Min + ACO vs Min-Min + GA. Semua 10 dataset historis menunjukkan makespan Max-Min + ACO lebih rendah, sehingga dipilih untuk penjelasan utama. GA lebih cepat menghitung jadwal pada rekaman itu. Tidak ada klaim unggul universal.
+2. **Hybrid vs Metaheuristik:** hasil eksperimen baru yang memakai algoritma Java asli dari kedua repositori pada konfigurasi bersama, dibandingkan dengan ACO dan GWO tugas sebelumnya. Rekaman ACO/GWO lama tersedia melalui disclosure terpisah dan tidak dicampur ke ranking terkontrol.
+
+Sumber terverifikasi:
+
+| Sumber | Commit | Berkas utama |
+|---|---|---|
+| [Hybrid](https://github.com/RizzqiAkbar/Algoritma-Hybrid-Kelompok-8) | `2c0dd4b97489b4bc147e28d01bfa0acd9c37c80b` | `Hybrid.java`, `Datasets/`, `Results/hasil_simulasi_hybrid.csv`, `Results/ringkasan_simulasi.txt` |
+| [Metaheuristik sebelumnya](https://github.com/farelrafli/soka-cloudsim-metaheuristik) | `ded59903791064cc8f7084fbc3b74ac31aa363b3` | `Main.java`, `MetaScheduler.java`, `Tuning.java`, `output/hasil_metrik_perbandingan.csv`, `output/parameter_terpilih.txt` |
+
+Semua **10 pasangan workload identik dalam panjang dan urutan task** setelah parsing JSON `length_mi` dan TXT. Hash file berbeda karena format; hash workload terurut cocok. Ini tidak membuktikan identitas dengan arsip minggu 3 di luar kedua repo tersebut, yang tidak disertakan. Sumber dan hash ada pada `data/benchmarks/historical.json`.
+
+Konfigurasi historis berbeda: hybrid memakai 10 VM satu PE, MIPS dari tier 500–2.500 yang dibangkitkan dengan seed dinamis tidak tercatat; ACO/GWO memakai CloudSim Plus 8.0.0, 3 datacenter, 15 host, 30 VM, total **93 PE dan 51.951 MIPS** (seed VM 99). Imbalance lama adalah SD waktu selesai VM dalam detik, bukan DoI. Utilisasi dan biaya juga memakai rumus berbeda. CSV meta akhir memakai parameter hasil tuning: ACO 20×100, GWO 50×25, seed algoritma 42; hasil parameter awal dan hasil tuning tidak diperlakukan sebagai hasil akhir.
+
+**Eksperimen terkontrol baru:** CloudSim 3.0.3, 1 datacenter, 10 host, 10 VM satu PE; MIPS `[500,1000,1500,2000,2500]` diulang dua kali (total 15.000). Semua task satu PE, urutan dataset sama, batch tanpa submission delay, SpaceShared pada VM, TimeShared pada host tanpa oversubscription. Metode private hybrid dipanggil lewat reflection dari `Hybrid.java` asli; standalone memakai `MetaScheduler.java` asli. Keduanya dikompilasi tanpa edit ke direktori eksperimen ignored. Memilih satu PE memungkinkan evaluator asli kedua repo mempunyai semantik yang sama tanpa mengubah pencarian atau browser engine.
+
+- Cohort parameter asli: **400 run**, 10 dataset × seed 1–10 × 4 metode, termasuk Min-Min + GA sebagai tambahan. Hybrid ACO: 1.250 kandidat + 1 seed; ACO murni: 2.000 evaluasi; GWO: 1.300 evaluasi; GA: 10.151 fitness calls termasuk tournament yang berulang.
+- Cohort anggaran pencarian setara: **300 run**, 10 dataset × seed 1–10 × 3 metode. Hybrid 25×50, ACO 25×50, GWO 50×(24+1): masing-masing 1.250 kandidat stokastik. Hybrid tetap mempunyai satu evaluasi seed tambahan dan biaya konstruksi Max-Min. Ini bukan ablation seeding murni atau persamaan runtime.
+- Raw CSV, mapping semua run, mean, SD sampel (`ddof=1`), terbaik, terburuk dan jumlah run berhasil tersedia di `data/benchmarks/`. Tidak ada run yang dihapus atau dataset yang diinterpolasi. Whisker menunjukkan mean ± SD, bukan confidence interval.
+- Makespan terkontrol = finish terakhir − start pertama; offset startup dikeluarkan, sementara kedua timestamp asli dan prediksi model ikut dicatat. Gap model/CloudSim maksimum sekitar 0,011804% (parameter asli) dan 0,011550% (anggaran setara), akibat model diskret simulator/rounding. DoI memakai beban CPU aktual semua VM; utilisasi = total CPU/(span×10)×100%; biaya model = total CPU seconds×USD3/s. Runtime memakai `System.nanoTime`, mencakup persiapan input umum dan pencarian, tidak termasuk CloudSim.
+- Lingkungan: Intel Core i5-10310U, Ubuntu WSL2, OpenJDK 21.0.13.1, `-Xms256m -Xmx1536m`, run sekuensial dengan urutan metode dirotasi menurut seed, satu warm-up seed 42 per metode/cohort yang tidak dilaporkan sebagai run hasil. Runtime bukan benchmark mesin lain atau JVM yang sudah stabil sempurna.
+
+**Temuan pada konfigurasi ini:** rata-rata makespan hybrid lebih rendah dari ACO dan GWO pada 10/10 dataset di kedua cohort. Penurunan relatif terhadap ACO 1,04–1,84% pada parameter asli dan 2,00–2,94% pada anggaran pencarian setara; terhadap GWO 22,19–51,67% dan 22,55–50,57%. GWO mempunyai runtime scheduler lebih rendah pada 10/10 dataset di kedua cohort. ACO murni mempunyai biaya model lebih rendah dari hybrid pada 10/10 dataset. Karena dua implementasi ACO juga berbeda dalam visibility, deposit dan batas feromon, hasil ini tidak mengisolasi efek Max-Min saja dan tidak membuktikan superioritas umum.
+
+### Rujukan ilmiah yang sudah dibaca dari PDF
+
+- Nahla Ahmed Faraj & Ramesh Babu Inampudi (2018), *Task Scheduling based on Advance Ant Colony Optimization and Particle Swarm Optimization with Machine learning in the cloud environment*, **International Journal of Management, Technology And Engineering**, 8(XII), 32–42. [PDF penerbit](https://ijamtes.org/gallery/4-dec.pdf). Paper mengusulkan MLCCAP (AACO + PSO + Classifier Chains). Hlm. 34 membahas Max-Min + **PSO** pada related work; konsep ACO ada di hlm. 36–37. Paper ini sendiri bukan bukti proposal langsung Max-Min + ACO.
+- Wanneng Shu & Jiangqing Wang (2009), *Min-Min Chromosome Genetic Algorithm for Load Balancing in Grid Computing*, **International Journal of Distributed Sensor Networks**, 5, 62–63. [DOI](https://doi.org/10.1080/15501320802554976). MCGA memberi dasar langsung konsep Min-Min + GA untuk grid. Dua halaman ini tidak menentukan populasi, tournament, Pc/Pm atau fitness persis seperti kode kelompok.
+
+Kelompok mengadaptasi seeding heuristik ke CloudSim cloud, bukan mereproduksi semua sistem dalam paper. Judul generik dan tahun yang sebelumnya keliru sudah dikoreksi; kutipan PSO yang diubah menjadi `[metaheuristic]` dihapus. Rujukan tambahan Banupriya & Xavier Christopher tentang MMH+EACO tersedia pada disclosure materi 1: [artikel penerbit](https://www.ijisae.org/index.php/IJISAE/article/view/3413), IJISAE 12(1s), 258–270 (edisi 2024, daring 2023). Kerangkanya memakai load balancing, resource allocation dan WSVM migration; bukan kode seeding yang sama. PDF juga mempunyai ketidakkonsistenan penyebutan metode pada awal §3; tidak dipakai untuk mengklaim parameter atau hasil kelompok. Status peer review mengikuti kebijakan penerbit, bukan jaminan kualitas metodologi. Konfirmasi penerimaan adaptasi terhadap syarat dosen yang mengharuskan hybrid persis dari jurnal tetap diperlukan; keunikan pilihan antar-kelas belum dapat diverifikasi tanpa daftar kelas.
+
+### Reproduksi benchmark
+
+Jalankan di Ubuntu WSL dari root repo (JDK 17+, Maven, Python 3; tanpa dependency Python tambahan untuk benchmark):
+
+```bash
+bash experiments/prepare.sh
+bash experiments/run.sh
+bash experiments/run.sh data/benchmarks/equal-search 1000 equal-search
+python3 experiments/aggregate.py
+```
+
+`prepare.sh` membuat reference checkout terpisah pada commit terkunci dan menolak checkout yang berubah/kotor. Tidak menjalankan `Main` asli yang dapat menimpa historical output. `run.sh` mengompilasi sumber asli ke `work/academic/classes`, bukan mengedit repo referensi. Menjalankan ulang benchmark menghasilkan **run baru**, terutama nilai runtime yang dapat berubah; simpan hasil lama bila perlu membandingkan reproduksi.
+
+`ui/academic.js` dan `ui/academic-data.js` hanya membaca JSON lokal; tidak ada request GitHub saat presentasi. `academic.css` terbatas pada materi 1/5. Data rusak/hilang menampilkan sebab dan tombol retry; benchmark hybrid asli tetap tersedia. Tes tambahan memeriksa import, hash/urutan workload, satuan, missing values, pemisahan eksperimen, agregasi 700 run, mapping/evaluator, filter, persentase, pemilihan hybrid dan hash preservasi. Total **33 tes** lulus dan **32 parity Java** tetap lulus. Dokumen metodologi, laporan perbandingan, implementation report dan presenter guide tetap lokal sesuai kebijakan pengguna: hanya README.md yang dipublikasikan sebagai Markdown.
+
 ## Cloud Ops 3D
+
+**Catatan versi terbaru (baseline `694229d`):** launcher saat ini membuka `dunia3d.html`, sesuai pembaruan rekan. Seluruh berkas 3D dan integrasinya dipertahankan identik. Uraian `/cloud-ops/` di bawah mendokumentasikan integrasi sebelumnya yang masih tersimpan di repo, bukan jaminan perilaku entry point terbaru. `dunia3d.html` memakai Three.js dari jsDelivr; dukungan 3D sepenuhnya offline tidak diklaim. Benchmark akademik sendiri hanya membaca data lokal.
+
+Smoke test terbaru: scene terbuka dan tombol **Kembali ke presentasi** milik dialog induk mengembalikan mode/event laboratorium yang sama. Tombol kembali di dalam game belum menutup iframe pada pengujian ini; gunakan kontrol induk tersebut. Peringatan deprecation build Three.js juga berasal dari versi yang sudah ada. Keduanya dicatat sebagai temuan 3D sebelumnya, tanpa perbaikan dalam refinement akademik ini.
 
 Pada materi 4, klik **Simulasi 3D**. Pengalaman **Cloud Ops 3D — Jadilah Scheduler** terbuka pada halaman same-origin di dalam dialog layar penuh, tanpa menambah materi keenam. **Kembali ke presentasi** atau Escape mengembalikan pengguna ke state laboratorium yang sama. Playback dan eksekusi 2D dijeda saat masuk; skenario, parameter, algoritma, mode, event, hasil dan kandidat inspeksi tetap tersimpan di halaman induk, tanpa dihitung ulang.
 

@@ -1,0 +1,54 @@
+{
+  "verifiedDate": "2026-11-26",
+  "primary": [
+    {
+      "file": "4-dec.pdf",
+      "sha256": "cdcced8dbaa3f320e145e320196afb726112a5a01024ea84f8421e82e3006824",
+      "title": "Task Scheduling based on Advance Ant Colony Optimization and Particle Swarm Optimization with Machine learning in the cloud environment",
+      "authors": ["Nahla Ahmed Faraj", "Ramesh Babu Inampudi"],
+      "year": 2018,
+      "journal": "International Journal of Management, Technology And Engineering",
+      "volume": 8,
+      "issue": "XII",
+      "pages": [32, 42],
+      "pdfPages": 11,
+      "source": "https://ijamtes.org/gallery/4-dec.pdf",
+      "actualProposal": "MLCCAP: AACO + PSO + Classifier Chains",
+      "relatedWorkPage34": "Max-Min + PSO, not Max-Min + ACO",
+      "acoPages": [36, 37],
+      "groupAdaptation": "Max-Min schedule initializes global best and task–VM pheromone; no PSO or machine learning implemented",
+      "exactImplementationFromPaper": false
+    },
+    {
+      "file": "shu-wang-2009-min-min-chromosome-genetic-algorithm-for-load-balancing-in-grid-computing.pdf",
+      "sha256": "3c0295590c7ffad3c7941d264509f4fb6626e32ed5c9adc950c1eb09825df76e",
+      "title": "Min-Min Chromosome Genetic Algorithm for Load Balancing in Grid Computing",
+      "authors": ["Wanneng Shu", "Jiangqing Wang"],
+      "year": 2009,
+      "journal": "International Journal of Distributed Sensor Networks",
+      "volume": 5,
+      "pages": [62, 63],
+      "pdfPages": 2,
+      "doi": "10.1080/15501320802554976",
+      "source": "https://doi.org/10.1080/15501320802554976",
+      "actualProposal": "MCGA combines Min-Min and GA for grid load balancing",
+      "groupAdaptation": "CloudSim cloud scheduling; population, tournament, probabilities and fitness chosen by group",
+      "exactImplementationFromPaper": false
+    }
+  ],
+  "supplement": {
+    "authors": ["M. R. Banupriya", "D. Francis Xavier Christopher"],
+    "issueYear": 2024,
+    "onlineDate": "2023-09-02",
+    "journal": "International Journal of Intelligent Systems and Applications in Engineering",
+    "volume": 12,
+    "issue": "1s",
+    "pages": [258, 270],
+    "source": "https://www.ijisae.org/index.php/IJISAE/article/view/3413",
+    "fullText": "https://ijisae.org/index.php/IJISAE/article/download/3413/2000/8341",
+    "peerReviewPolicy": "https://www.ijisae.org/index.php/IJISAE/about",
+    "relation": "MMH load balancing followed by EACO allocation; broader migration/WSVM framework, not identical pheromone seeding implementation",
+    "caution": "Opening of section 3 names ESA+WSVMCVM despite MMH+EACO title; metadata online year and issue year differ. Retained only as supplemental conceptual support.",
+    "replacesOriginalPapers": false
+  }
+}

@@ -1,0 +1,39 @@
+#slide-1 .verified-literature{align-items:start;margin-top:30px}
+#slide-1 .verified-literature h4{font-size:16px;line-height:1.5;margin:8px 0}
+#slide-1 .verified-literature article>p{font-size:14px;line-height:1.65;margin:8px 0}
+#slide-1 .verified-literature summary{font-size:13px}
+#slide-1 .verified-literature h5{font-size:14px;line-height:1.5;margin:18px 0 10px}
+#slide-1 .verified-literature blockquote{margin:12px 0;padding:2px 0 2px 16px;border-left:3px solid var(--aco)}
+#slide-1 .verified-literature blockquote p{font-size:14px;line-height:1.65;margin:0 0 6px}
+#slide-1 .verified-literature blockquote cite{display:block;font-size:12px;line-height:1.5;font-style:normal;color:var(--muted)}
+#slide-1 .academic-adaptation{border-top:1px solid var(--edge);margin-top:22px;padding-top:18px;max-width:1200px}
+#slide-1 .academic-adaptation>p{margin:10px 0 16px;max-width:1050px}
+#slide-1 .academic-adaptation details p{font-size:14px;line-height:1.65}
+#slide-5 .page-title{padding-bottom:16px}
+#slide-5 .benchmark-tabs{display:flex;gap:0;margin:6px 0 16px;border-bottom:1px solid var(--edge)}
+#slide-5 .benchmark-tabs button{border:0;border-radius:0;background:transparent;border-bottom:3px solid transparent;padding:12px 20px;min-height:48px}
+#slide-5 .benchmark-tabs button[aria-selected=true]{border-bottom-color:var(--aco);color:var(--aco);background:var(--aco-light)}
+#slide-5 .benchmark-tabs button:hover{background:#e6e8e0}
+#slide-5 [role=tabpanel]>h3{font-size:21px;margin:8px 0}
+#slide-5 .benchmark-context{font-size:13px;color:var(--muted);margin:6px 0;max-width:1100px}
+#slide-5 .benchmark-conclusion{font-size:16px;font-weight:600;margin:14px 0;max-width:1200px}
+#slide-5 .benchmark-tools{padding:10px 0;flex-wrap:wrap}
+#slide-5 .legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:12px}
+#slide-5 .legend>span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+#slide-5 .academic-swatch{width:13px;height:13px;display:inline-block;border-radius:0}
+#slide-5 .standalone-aco{background:#466480}#slide-5 .standalone-gwo{background:#68506c}
+#slide-5 .chart-note,#slide-5 .benchmark-source{font-size:12px;color:var(--muted);margin:8px 0 16px}
+#slide-5 .benchmark-source a{font-size:inherit}
+#slide-5 #controlled-chart svg,#slide-5 #historical-meta-chart svg{display:block;width:100%;min-width:700px}
+#slide-5 svg g[tabindex]:focus{outline:none}#slide-5 svg g[tabindex]:focus rect{stroke:var(--ink);stroke-width:3}
+#slide-5 details{margin-top:18px;padding-top:2px}
+#slide-5 details>p{font-size:14px;margin:8px 0;max-width:1150px;line-height:1.65}
+#slide-5 details>select{margin:6px 0 12px;max-width:100%;min-height:44px}
+#slide-5 details>label{display:block;margin-top:10px}
+#slide-5 .comparison-limit{font-weight:600;background:#f7e9e0;padding:12px 14px;color:#75351e}
+#slide-5 #controlled-method .table-scroll{max-height:380px}
+#slide-5 #academic-status{font-size:13px;padding:8px 0}
+#slide-5 #retry-academic{margin-bottom:12px}
+@media(min-width:1500px){#slide-5 .benchmark-context,#slide-5 .legend{font-size:14px}#slide-5 .chart-note,#slide-5 .benchmark-source{font-size:13px}}
+@media(max-width:850px){#slide-1 .verified-literature{grid-template-columns:1fr;gap:18px}#slide-5 .benchmark-tools{gap:10px}#slide-5 .legend{width:100%;margin-top:6px}#slide-5 .benchmark-tabs button{padding:10px 14px}#slide-5 .benchmark-conclusion{font-size:15px}}
+@media(max-width:560px){#slide-5 .benchmark-tabs button{flex:1;font-size:13px}#slide-5 .benchmark-context{font-size:12px}#slide-5 [role=tabpanel]>h3{font-size:19px}#slide-5 .benchmark-table{font-size:12px}#slide-1 .academic-adaptation{margin-top:16px}}

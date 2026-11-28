@@ -1,0 +1,539 @@
+{
+  "schema": 1,
+  "columns": [
+    "historicalHybrid",
+    "historicalMeta",
+    "controlled"
+  ],
+  "fields": {
+    "datacenters": [
+      1,
+      3,
+      1
+    ],
+    "hosts": [
+      10,
+      15,
+      10
+    ],
+    "vms": [
+      10,
+      30,
+      10
+    ],
+    "vmPes": [
+      "1",
+      "1\u20134 (total 93)",
+      "1 (total 10)"
+    ],
+    "vmMips": [
+      "random choices 500/1000/1500/2000/2500 per dataset, exact draws not logged",
+      "Java Random(99); per-PE MIPS and PE arrays attached",
+      "[500,1000,1500,2000,2500] repeated twice"
+    ],
+    "vmTotalMips": [
+      "unknown per historical run; VM MIPS/seed not recorded",
+      51951,
+      15000
+    ],
+    "hostCapacity": [
+      "10 hosts \u00d7 1 PE \u00d7 100000 MIPS",
+      315640,
+      "10 hosts \u00d7 1 PE \u00d7 100000 MIPS"
+    ],
+    "vmScheduler": [
+      "VmSchedulerTimeShared",
+      "VmSchedulerTimeShared",
+      "VmSchedulerTimeShared"
+    ],
+    "cloudletScheduler": [
+      "CloudletSchedulerSpaceShared",
+      "CloudletSchedulerSpaceShared",
+      "CloudletSchedulerSpaceShared"
+    ],
+    "arrival": [
+      "all submitted in one batch, no submission delay",
+      "all submitted in one batch, no submission delay",
+      "all submitted in one batch, no submission delay"
+    ],
+    "taskPes": [
+      1,
+      1,
+      1
+    ],
+    "cpuUtilization": [
+      "UtilizationModelFull",
+      "UtilizationModelDynamic(1.0)",
+      "UtilizationModelFull"
+    ],
+    "execution": [
+      "one concurrent task per VM",
+      "earliest available PE in selected VM; 1\u20134 concurrent single-PE tasks",
+      "one concurrent task per VM"
+    ],
+    "objective": [
+      "maximum sum ETC per VM",
+      "maximum PE completion time under dataset order",
+      "same single-PE completion-time objective for all search methods"
+    ],
+    "simulator": [
+      "CloudSim 3.0.3",
+      "CloudSim Plus 8.0.0",
+      "CloudSim 3.0.3"
+    ],
+    "seeds": [
+      "SecureRandom.nextLong XOR nanoTime per dataset, same seed for the two hybrids; not saved",
+      "host=42, VM=99, algorithm=42",
+      "algorithm seeds 1\u201310, fixed common MIPS; warm-up seed 42 excluded"
+    ],
+    "runsPerDatasetAlgorithm": [
+      1,
+      1,
+      10
+    ],
+    "parameters": [
+      "hybrid ACO:25\u00d750 \u03b11 \u03b22 \u03c1.2 Q100; GA:30\u00d750 tournament3 Pc.8 Pm.05",
+      "ACO:20\u00d7100 \u03b11 \u03b22 \u03c1.2 \u03c40=1 bounds.01\u201310 Q=lowerBound; GWO:50\u00d725",
+      "tuned original parameters plus optional equal-search ACO25\u00d750/GWO50\u00d724; hybrid unchanged"
+    ],
+    "evaluations": [
+      "ACO1251 including seed; GA10151 fitness calls including tournament reuse",
+      "ACO2000, GWO1300",
+      "tuned same counts; equal-search 1250 stochastic candidates + hybrid one seed"
+    ],
+    "makespan": [
+      "maximum absolute Cloudlet finish",
+      "maximum absolute Cloudlet finish",
+      "last finish minus first start; original absolute finish and first start also recorded"
+    ],
+    "imbalance": [
+      "(max accumulated VM CPU \u2212 min)/(mean+1e-9), dimensionless",
+      "population SD of per-VM maximum finish time, seconds; idle VM finish=0",
+      "same DoI formula as hybrid, all 10 VMs included"
+    ],
+    "utilization": [
+      "100\u00d7total CPU time/(makespan\u00d7VM count+1e-9)",
+      "100/VM count \u00d7 sum[sum(task MI/MIPS)/(PE count\u00d7actual makespan)]",
+      "100\u00d7total CPU time/(normalized span\u00d710+1e-9)"
+    ],
+    "cost": [
+      "total actual CPU seconds\u00d73 USD/s",
+      "sum VM finish\u00d7VM per-PE MIPS\u00d7PE count\u00d70.00001; no runtime column",
+      "total actual CPU seconds\u00d73 USD/s"
+    ],
+    "runtime": [
+      "System.nanoTime around hybrid search, excludes ETC build and CloudSim",
+      "not recorded in final CSV; tuning outputs contain candidate quality, not runtime",
+      "System.nanoTime around common input preparation and original search, excludes CloudSim; sequential rotated order, one warm-up per method/cohort"
+    ],
+    "environment": [
+      "hardware/JVM flags not recorded; pom targets Java17",
+      "hardware/JVM flags not recorded; pom targets Java17",
+      "Intel Core i5-10310U, WSL2 Ubuntu, OpenJDK21.0.13.1, Xms256m Xmx1536m"
+    ],
+    "workloadOrder": [
+      "length_mi in JSON appearance order",
+      "one MI integer per TXT line",
+      "same JSON appearance order; all 10 parsed sequences match TXT exactly"
+    ]
+  },
+  "metaInfrastructure": {
+    "hosts": [
+      {
+        "id": 0,
+        "pes": 4,
+        "mipsPerPe": 1096,
+        "ramMB": 7056
+      },
+      {
+        "id": 1,
+        "pes": 16,
+        "mipsPerPe": 1651,
+        "ramMB": 14996
+      },
+      {
+        "id": 2,
+        "pes": 4,
+        "mipsPerPe": 2400,
+        "ramMB": 12048
+      },
+      {
+        "id": 3,
+        "pes": 6,
+        "mipsPerPe": 2679,
+        "ramMB": 10214
+      },
+      {
+        "id": 4,
+        "pes": 12,
+        "mipsPerPe": 1711,
+        "ramMB": 10818
+      },
+      {
+        "id": 5,
+        "pes": 8,
+        "mipsPerPe": 1861,
+        "ramMB": 4980
+      },
+      {
+        "id": 6,
+        "pes": 15,
+        "mipsPerPe": 1959,
+        "ramMB": 5357
+      },
+      {
+        "id": 7,
+        "pes": 8,
+        "mipsPerPe": 1782,
+        "ramMB": 8203
+      },
+      {
+        "id": 8,
+        "pes": 16,
+        "mipsPerPe": 1483,
+        "ramMB": 15887
+      },
+      {
+        "id": 9,
+        "pes": 10,
+        "mipsPerPe": 2024,
+        "ramMB": 15619
+      },
+      {
+        "id": 10,
+        "pes": 16,
+        "mipsPerPe": 2683,
+        "ramMB": 10942
+      },
+      {
+        "id": 11,
+        "pes": 11,
+        "mipsPerPe": 2787,
+        "ramMB": 8444
+      },
+      {
+        "id": 12,
+        "pes": 10,
+        "mipsPerPe": 2825,
+        "ramMB": 4381
+      },
+      {
+        "id": 13,
+        "pes": 14,
+        "mipsPerPe": 1101,
+        "ramMB": 16042
+      },
+      {
+        "id": 14,
+        "pes": 12,
+        "mipsPerPe": 1574,
+        "ramMB": 9609
+      }
+    ],
+    "vms": [
+      {
+        "id": 0,
+        "pes": 2,
+        "mipsPerPe": 671,
+        "ramMB": 1281
+      },
+      {
+        "id": 1,
+        "pes": 4,
+        "mipsPerPe": 322,
+        "ramMB": 1187
+      },
+      {
+        "id": 2,
+        "pes": 3,
+        "mipsPerPe": 873,
+        "ramMB": 1692
+      },
+      {
+        "id": 3,
+        "pes": 2,
+        "mipsPerPe": 440,
+        "ramMB": 2009
+      },
+      {
+        "id": 4,
+        "pes": 3,
+        "mipsPerPe": 818,
+        "ramMB": 843
+      },
+      {
+        "id": 5,
+        "pes": 2,
+        "mipsPerPe": 441,
+        "ramMB": 1977
+      },
+      {
+        "id": 6,
+        "pes": 3,
+        "mipsPerPe": 481,
+        "ramMB": 677
+      },
+      {
+        "id": 7,
+        "pes": 4,
+        "mipsPerPe": 601,
+        "ramMB": 1431
+      },
+      {
+        "id": 8,
+        "pes": 4,
+        "mipsPerPe": 577,
+        "ramMB": 1853
+      },
+      {
+        "id": 9,
+        "pes": 3,
+        "mipsPerPe": 623,
+        "ramMB": 1866
+      },
+      {
+        "id": 10,
+        "pes": 3,
+        "mipsPerPe": 347,
+        "ramMB": 1053
+      },
+      {
+        "id": 11,
+        "pes": 1,
+        "mipsPerPe": 896,
+        "ramMB": 1790
+      },
+      {
+        "id": 12,
+        "pes": 4,
+        "mipsPerPe": 282,
+        "ramMB": 604
+      },
+      {
+        "id": 13,
+        "pes": 4,
+        "mipsPerPe": 492,
+        "ramMB": 1535
+      },
+      {
+        "id": 14,
+        "pes": 4,
+        "mipsPerPe": 614,
+        "ramMB": 1265
+      },
+      {
+        "id": 15,
+        "pes": 4,
+        "mipsPerPe": 978,
+        "ramMB": 1976
+      },
+      {
+        "id": 16,
+        "pes": 4,
+        "mipsPerPe": 764,
+        "ramMB": 1470
+      },
+      {
+        "id": 17,
+        "pes": 2,
+        "mipsPerPe": 280,
+        "ramMB": 1950
+      },
+      {
+        "id": 18,
+        "pes": 2,
+        "mipsPerPe": 944,
+        "ramMB": 1445
+      },
+      {
+        "id": 19,
+        "pes": 3,
+        "mipsPerPe": 838,
+        "ramMB": 961
+      },
+      {
+        "id": 20,
+        "pes": 1,
+        "mipsPerPe": 830,
+        "ramMB": 1625
+      },
+      {
+        "id": 21,
+        "pes": 4,
+        "mipsPerPe": 522,
+        "ramMB": 828
+      },
+      {
+        "id": 22,
+        "pes": 2,
+        "mipsPerPe": 989,
+        "ramMB": 716
+      },
+      {
+        "id": 23,
+        "pes": 4,
+        "mipsPerPe": 594,
+        "ramMB": 551
+      },
+      {
+        "id": 24,
+        "pes": 3,
+        "mipsPerPe": 250,
+        "ramMB": 1116
+      },
+      {
+        "id": 25,
+        "pes": 3,
+        "mipsPerPe": 484,
+        "ramMB": 1972
+      },
+      {
+        "id": 26,
+        "pes": 4,
+        "mipsPerPe": 374,
+        "ramMB": 1383
+      },
+      {
+        "id": 27,
+        "pes": 4,
+        "mipsPerPe": 353,
+        "ramMB": 1378
+      },
+      {
+        "id": 28,
+        "pes": 3,
+        "mipsPerPe": 459,
+        "ramMB": 1987
+      },
+      {
+        "id": 29,
+        "pes": 4,
+        "mipsPerPe": 321,
+        "ramMB": 1814
+      }
+    ],
+    "hostTotalMips": 315640,
+    "vmTotalMips": 51951,
+    "vmTotalPes": 93
+  },
+  "datasetAudit": [
+    {
+      "n": 100,
+      "hybridFile": "Datasets/GoCJ_Dataset_100.json",
+      "metaFile": "src/main/resources/dataset/GoCJ_Dataset_100.txt",
+      "hybridSha256": "cfbd431f447b50470a60aa020cc3ada9136c7b2949106709c1fb58164cad3bea",
+      "metaSha256": "56f388ec57097229b86dee2dc70784f1fc1a8d7376aa98e5fc3efb3ca7a53a3e",
+      "orderedEqual": true,
+      "hybridWorkloadSha256": "6692afd99f1fdcd22eb30645dbbbb16a198568a8f9cea65d2ad6e06462d85170",
+      "metaWorkloadSha256": "6692afd99f1fdcd22eb30645dbbbb16a198568a8f9cea65d2ad6e06462d85170",
+      "totalMI": 13509500
+    },
+    {
+      "n": 200,
+      "hybridFile": "Datasets/GoCJ_Dataset_200.json",
+      "metaFile": "src/main/resources/dataset/GoCJ_Dataset_200.txt",
+      "hybridSha256": "addc2ea7702f24d6ece59b62f59769b32b61a1a05b0ddec0ed0d2399d7a03422",
+      "metaSha256": "b010ae9738eefede885c676b60562422258a904d745be5666571af39c1d3d955",
+      "orderedEqual": true,
+      "hybridWorkloadSha256": "aac3dce23c6d72b903db0f9ceea72f9cc255d3e21e6d877d211732bb55849bdc",
+      "metaWorkloadSha256": "aac3dce23c6d72b903db0f9ceea72f9cc255d3e21e6d877d211732bb55849bdc",
+      "totalMI": 27219500
+    },
+    {
+      "n": 300,
+      "hybridFile": "Datasets/GoCJ_Dataset_300.json",
+      "metaFile": "src/main/resources/dataset/GoCJ_Dataset_300.txt",
+      "hybridSha256": "79eeaf1fada2c8b622dc18fcd20c272824c1be318856ddd1e2ab712bd7f34352",
+      "metaSha256": "f86f79d9264f1eb4064f77d23a164dbfe4dfa6330d0c354714f3b4c2eda48eb9",
+      "orderedEqual": true,
+      "hybridWorkloadSha256": "039f74d0272602569cd11a29fcbfd6d9f7ecc538641f157ffa958f6d3340af8f",
+      "metaWorkloadSha256": "039f74d0272602569cd11a29fcbfd6d9f7ecc538641f157ffa958f6d3340af8f",
+      "totalMI": 41526000
+    },
+    {
+      "n": 400,
+      "hybridFile": "Datasets/GoCJ_Dataset_400.json",
+      "metaFile": "src/main/resources/dataset/GoCJ_Dataset_400.txt",
+      "hybridSha256": "ff9a7515194758c1cea2dd9bd33508fcec8e73c3b91cdc00648ee4ecb9ccd914",
+      "metaSha256": "6589d62b19ca36216d641486703826582bfeff99728726f80ebbc14eaf1fb741",
+      "orderedEqual": true,
+      "hybridWorkloadSha256": "47044bababd127302f5decdb58c808b5c201ab1eb60e833a09e9e3e452a53193",
+      "metaWorkloadSha256": "47044bababd127302f5decdb58c808b5c201ab1eb60e833a09e9e3e452a53193",
+      "totalMI": 51869500
+    },
+    {
+      "n": 500,
+      "hybridFile": "Datasets/GoCJ_Dataset_500.json",
+      "metaFile": "src/main/resources/dataset/GoCJ_Dataset_500.txt",
+      "hybridSha256": "e91c83de96fb1fb623cf626ee0fccf974c8a74720df397cbed57a50114da0141",
+      "metaSha256": "c2792fce2695fa822ed73976dec88c3d1b7a97d24d9440d1063ac04428299617",
+      "orderedEqual": true,
+      "hybridWorkloadSha256": "444291b2ec6b69c63be2b04e5c67cca6d623bcb65147e19575e6b0457010ada7",
+      "metaWorkloadSha256": "444291b2ec6b69c63be2b04e5c67cca6d623bcb65147e19575e6b0457010ada7",
+      "totalMI": 65001500
+    },
+    {
+      "n": 600,
+      "hybridFile": "Datasets/GoCJ_Dataset_600.json",
+      "metaFile": "src/main/resources/dataset/GoCJ_Dataset_600.txt",
+      "hybridSha256": "f405fd84748e4302c497f0b6fc764b709e1a44e3f03aa47bbdcd74978377e3d5",
+      "metaSha256": "6369fd20e97bcdb99d101fd96dfa1a509a952ee4044cbb42e5af70a04e4ca45e",
+      "orderedEqual": true,
+      "hybridWorkloadSha256": "02712c2c8b4a383debb57d77fc991a8c6aa086f74c70927660693db0c2848da9",
+      "metaWorkloadSha256": "02712c2c8b4a383debb57d77fc991a8c6aa086f74c70927660693db0c2848da9",
+      "totalMI": 82341000
+    },
+    {
+      "n": 700,
+      "hybridFile": "Datasets/GoCJ_Dataset_700.json",
+      "metaFile": "src/main/resources/dataset/GoCJ_Dataset_700.txt",
+      "hybridSha256": "c54948bfce6a1326c605b5b4209d4b70e8b7fe66ea7c4f6c79f4bb918de7ceb9",
+      "metaSha256": "8a12bd3f5d7618018c844e9cac436a012b6bf0eaeb8b19946fba93440e309c6e",
+      "orderedEqual": true,
+      "hybridWorkloadSha256": "2801d8fff78ff7fb70b568d41d1ce1bffc87fa748b558d1fd7ebe939f3c33612",
+      "metaWorkloadSha256": "2801d8fff78ff7fb70b568d41d1ce1bffc87fa748b558d1fd7ebe939f3c33612",
+      "totalMI": 87493500
+    },
+    {
+      "n": 800,
+      "hybridFile": "Datasets/GoCJ_Dataset_800.json",
+      "metaFile": "src/main/resources/dataset/GoCJ_Dataset_800.txt",
+      "hybridSha256": "65e48306d2fba83f04fcd8ff82306d5c55d45de76eafabbd495a698743d07fc4",
+      "metaSha256": "2bf8dad3d87523e710998e270c59044bafe97c46d378eedd3eed865ddb68386e",
+      "orderedEqual": true,
+      "hybridWorkloadSha256": "26039cf5b39b440b9d023ef57e84aae4cebbb561166e28d5f8e63fe52cef32ed",
+      "metaWorkloadSha256": "26039cf5b39b440b9d023ef57e84aae4cebbb561166e28d5f8e63fe52cef32ed",
+      "totalMI": 98958000
+    },
+    {
+      "n": 900,
+      "hybridFile": "Datasets/GoCJ_Dataset_900.json",
+      "metaFile": "src/main/resources/dataset/GoCJ_Dataset_900.txt",
+      "hybridSha256": "b7794dd234629e8cc7d8486f9aab43bbc9fdbb37266d04f46d5c827f51cde12b",
+      "metaSha256": "4525a5589a326006aba758218aebd336813bc535caf2880f789735e0d3e038d3",
+      "orderedEqual": true,
+      "hybridWorkloadSha256": "42868d47ad893045e6c05300c1eeb93c71fcfc9c4ad73960601d028ca91a3581",
+      "metaWorkloadSha256": "42868d47ad893045e6c05300c1eeb93c71fcfc9c4ad73960601d028ca91a3581",
+      "totalMI": 120047000
+    },
+    {
+      "n": 1000,
+      "hybridFile": "Datasets/GoCJ_Dataset_1000.json",
+      "metaFile": "src/main/resources/dataset/GoCJ_Dataset_1000.txt",
+      "hybridSha256": "5fb39e237d812334f6512a19ec24630769f7f175b3f4f110a661fc3ea194c1fa",
+      "metaSha256": "a4a3fa564c4407a950360650103883434de88234fc51de39ac46e85ebbd98628",
+      "orderedEqual": true,
+      "hybridWorkloadSha256": "47ab71a0b1b08b69abc29aea56131a3e97f70dd273543f72f6f413299dadc39a",
+      "metaWorkloadSha256": "47ab71a0b1b08b69abc29aea56131a3e97f70dd273543f72f6f413299dadc39a",
+      "totalMI": 129662000
+    }
+  ],
+  "week3Note": "Only cross-repository equality verified. No separate Week 3 archival dataset or cross-class algorithm registry was supplied.",
+  "historicalMetaFinalParametersFileSha256": "9b66049ad8a65828a738f9be1accff75bce52b2ad9066d90a748f95b383fd95e",
+  "sourceCodeSha256": {
+    "Hybrid.java": "4f226676a3a7ba9ee0c8d4e7ff785f7077dc7def3d9492e96eca74f5a08c142a",
+    "src/main/java/org/example/Main.java": "53659c91980021fdc982c81ded2ebf5f82f58a8bb2010dcbd7fea050534e38c4",
+    "src/main/java/org/example/MetaScheduler.java": "fdc33daa54ae4fb14d7d50542f83ee6cf5240797b25f5ff8aee6176e3439e2c4",
+    "src/main/java/org/example/Tuning.java": "a4f1a7f0ecb4fabad2b33cbfb55151604002c232da6d357feae3dd284cfac0ab"
+  }
+}
